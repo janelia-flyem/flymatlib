@@ -1,1 +1,8 @@
 *\.mexa64
+fml_dist/fml_dist
+fml_dist/fml_dist_single
+fml_dist/mccExcludedFiles.log
+fml_dist/readme.txt
+fml_dist/requiredMCRProducts.txt
+fml_dist/run_fml_dist.sh
+fml_dist/run_fml_dist_single.sh
