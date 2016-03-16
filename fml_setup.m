@@ -18,9 +18,10 @@ function fml_setup()
                'mexconv3d', 'setup_path.m'));
   
   addpath(fmlpath);
-  addpath(fullfile(fmlpath, 'cnn'         ));
-  addpath(fullfile(fmlpath, 'cnn', 'core' ));
-  addpath(fullfile(fmlpath, 'utils'       ));
-  addpath(fullfile(fmlpath, 'utils', 'syn'));
-  addpath(fullfile(fmlpath, 'third_party' ));
+  addpath(fullfile(fmlpath, 'cnn'                       ));
+  addpath(fullfile(fmlpath, 'cnn',         'core'       ));
+  addpath(fullfile(fmlpath, 'utils'                     ));
+  addpath(fullfile(fmlpath, 'utils',       'syn'        ));
+  addpath(fullfile(fmlpath, 'third_party'               ));
+  addpath(fullfile(fmlpath, 'third_party', 'export_fig' ));
 end
