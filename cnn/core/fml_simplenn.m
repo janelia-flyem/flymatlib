@@ -1,6 +1,6 @@
 function res = fml_simplenn(net, x, dzdy, res, varargin)
 % fork of VL_SIMPLENN with appropriate handling of 
-%   3d convolutions, max-pooling
+%   3d convolutions, max-pooling, batch normalization w/3d data
 %
 %VL_SIMPLENN  Evaluate a SimpleNN network.
 %   RES = VL_SIMPLENN(NET, X) evaluates the convnet NET on data X.
@@ -355,10 +355,22 @@ for i=1:n
       end
 
     case 'bnorm'
+      if(~isfield(l, 'is3d') || ~l.is3d) % normal 2d data
       if testMode
         res(i+1).x = vl_nnbnorm(res(i).x, l.weights{1}, l.weights{2}, 'moments', l.weights{3}) ;
       else
         res(i+1).x = vl_nnbnorm(res(i).x, l.weights{1}, l.weights{2}) ;
+      end
+      else % FML addition - 3d bnorm by collapsing 1st,2nd dims
+        x_sz = size(res(i).x);
+        if(length(x_sz)==4), x_sz(5) = 1; end
+        x_in = reshape(res(i).x, [], x_sz(3), x_sz(4), x_sz(5));
+        if testMode
+          x_out = vl_nnbnorm(x_in, l.weights{1}, l.weights{2}, 'moments', l.weights{3}) ;
+        else
+          x_out = vl_nnbnorm(x_in, l.weights{1}, l.weights{2}) ;
+        end
+        res(i+1).x = reshape(x_out, x_sz);
       end
 
     case 'pdist'
@@ -483,13 +495,27 @@ if doder
         end
 
       case 'bnorm'
+        if(~isfield(l, 'is3d') || ~l.is3d) % normal 2d data
         [res(i).dzdx, dzdw{1}, dzdw{2}, dzdw{3}] = ...
           vl_nnbnorm(res(i).x, l.weights{1}, l.weights{2}, res(i+1).dzdx) ;
         % multiply the moments update by the number of images in the batch
         % this is required to make the update additive for subbatches
         % and will eventually be normalized away
         dzdw{3} = dzdw{3} * size(res(i).x,4) ;
-
+        else % FML addition - 3d bnorm
+          x_sz    = size(res(i).x);
+          if(length(x_sz)==4), x_sz(5) = 1; end
+          x_in    = reshape(res(i).x,      [], ...
+                            x_sz(3), x_sz(4), x_sz(5));
+          dzdx_in = reshape(res(i+1).dzdx, [], ...
+                            x_sz(3), x_sz(4), x_sz(5));
+          
+          [dzdx_out, dzdw{1}, dzdw{2}, dzdw{3}] = ...
+            vl_nnbnorm(x_in, l.weights{1}, l.weights{2}, dzdx_in) ;
+          dzdw{3} = dzdw{3} * size(res(i).x,5) ;
+          
+          res(i).dzdx = reshape(dzdx_out, x_sz);
+        end
       case 'pdist'
         res(i).dzdx = vl_nnpdist(res(i).x, l.class, ...
           l.p, res(i+1).dzdx, ...
