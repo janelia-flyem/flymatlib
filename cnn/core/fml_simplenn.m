@@ -1,5 +1,5 @@
 function res = fml_simplenn(net, x, dzdy, res, varargin)
-% fork of VL_SIMPLENN with appropriate handling of 
+% fork of VL_SIMPLENN with appropriate handling of
 %   3d convolutions, max-pooling, batch normalization w/3d data
 %
 %VL_SIMPLENN  Evaluate a SimpleNN network.
@@ -328,11 +328,14 @@ for i=1:n
 
     case 'softmaxloss'
       res(i+1).x = vl_nnsoftmaxloss(res(i).x, l.class) ;
-    
+
     case 'sigentloss' % FML addition
       res(i+1).x = fml_nnsigentloss(res(i).x, l.class, l.target) ;
     case 'squaredloss' % FML addition
       res(i+1).x = fml_nnsquaredloss(res(i).x, l.class) ;
+    case 'objloss' % FML addition
+      res(i+1).x = fml_nncombobjloss(res(i).x, l.class, ...
+                                     l.target, l.rnorm);
 
     case 'relu'
       if l.leak > 0, leak = {'leak', l.leak} ; else leak = {} ; end
@@ -466,6 +469,10 @@ if doder
       case 'squaredloss' % FML addition
         res(i).dzdx = fml_nnsquaredloss(res(i).x, l.class, ...
                                         res(i+1).dzdx);
+      case 'objloss' % FML addition
+        res(i).dzdx = fml_nncombobjloss(res(i).x, l.class, ...
+                                        l.target, l.rnorm, ...
+                                        res(i+1).dzdx);
 
       case 'relu'
         if l.leak > 0, leak = {'leak', l.leak} ; else leak = {} ; end
@@ -509,11 +516,11 @@ if doder
                             x_sz(3), x_sz(4), x_sz(5));
           dzdx_in = reshape(res(i+1).dzdx, [], ...
                             x_sz(3), x_sz(4), x_sz(5));
-          
+
           [dzdx_out, dzdw{1}, dzdw{2}, dzdw{3}] = ...
             vl_nnbnorm(x_in, l.weights{1}, l.weights{2}, dzdx_in) ;
           dzdw{3} = dzdw{3} * size(res(i).x,5) ;
-          
+
           res(i).dzdx = reshape(dzdx_out, x_sz);
         end
       case 'pdist'

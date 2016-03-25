@@ -104,12 +104,14 @@ for ii=1:size(prefixes,1)
     aux_fn = prefixes{ii,3};
     aa     = single(read_image_stack(aux_fn));
   end
-  
+
   imdb.data{ii} = read_image_stack(data_fn);
-  
-  ll = single(read_image_stack(labels_fn));
+  ll = int8(read_image_stack(labels_fn));
+  if(size(ll,4)>1)
+    opts.train.errorFunction = 'combobj';
+  end
   mm = single(read_image_stack(mask_fn));
-  
+
   mm([1:imdb.ext_lower,end-imdb.ext_upper+1:end],:,:) = 0;
   mm(:,[1:imdb.ext_lower,end-imdb.ext_upper+1:end],:) = 0;
   mm(:,:,[1:imdb.ext_lower,end-imdb.ext_upper+1:end]) = 0;
@@ -123,7 +125,7 @@ for ii=1:size(prefixes,1)
         if(isnan(cc_val)) % no constraint
           imdb.pts{ii,cc} = find( mm>0 );
         else % is valid neg/pos label
-          imdb.pts{ii,cc} = find( (ll==cc_val) & (mm>0) );
+          imdb.pts{ii,cc} = find( (ll(:,:,:,1)==cc_val) & (mm>0) );
         end
       else
         aa_val = aux_classes(cc);
@@ -131,15 +133,18 @@ for ii=1:size(prefixes,1)
           imdb.pts{ii,cc} = find(   mm>0  & (aa==aa_val) );
         else % is valid neg/pos label
           imdb.pts{ii,cc} = ...
-              find( (ll==cc_val) & (mm>0) & (aa==aa_val) );
+              find( (ll(:,:,:,1)==cc_val) & (mm>0) & (aa==aa_val) );
         end
       end
-      
+
     end
   end
-    
-  clear ll mm
-  
+
+  clear mm
+
+  ll(:,:,:,1) = 2*ll(:,:,:,1)-1; % convert to -1,1
+  imdb.labels{ii} = ll;
+
   imdb.images.set = [1*ones(1,imdb.nums(1)), ...
                      2*ones(1,imdb.nums(2))];
 
@@ -152,7 +157,7 @@ end
 if(imdb.is_autoencoder == 2)
   get_batch_func = @getBatch_autoencoder2d;
 else
-  get_batch_func = @getBatch_on_the_fly;
+  get_batch_func = @tbar_cnn_get_batch;
 end
 
 [net, info] = fml_cnn_train(net, imdb, get_batch_func, ...
@@ -211,7 +216,7 @@ for jj=1:n_examples
       data_tmp(:,:,kk) = fliplr(data_tmp(:,:,kk));
     end
   end
-  
+
   labels(:,:,1,jj) = data_tmp;
   if(corrupt_type == 0)
     rr = randsample(patch_sz^2, num_corrupt);
@@ -222,103 +227,4 @@ for jj=1:n_examples
         sgm_corrupt * randn(patch_sz,patch_sz);
   end
   data(:,:,1,jj) = data_tmp;
-end
-
-
-% --------------------------------------------------------------------
-function [data, labels] = getBatch_on_the_fly(imdb, batch)
-% --------------------------------------------------------------------
-n_substacks = length(imdb.data);
-iiss = 1:(n_substacks-1); % training
-if(min(batch) > imdb.nums(1))
-  iiss = n_substacks; % validation
-end
-
-patch_sz  = imdb.patch_sz;
-ext_lower = imdb.ext_lower;
-ext_upper = imdb.ext_upper;
-
-corrupt_type = imdb.corrupt_type;
-
-if(corrupt_type == 0)
-  num_corrupt = floor(patch_sz^3 * imdb.corrupt);
-end
-if(corrupt_type == 1)
-  sgm_corrupt = imdb.corrupt;
-end
-
-n_examples_total = length(batch);
-data   = zeros(patch_sz,patch_sz,patch_sz,1,...
-               n_examples_total, 'single');
-labels = ones(1,1,1, 1,...
-              n_examples_total, 'single');
-idx = 0;
-
-n_examples = n_examples_total/length(iiss);
-assert(n_examples == round(n_examples), ...
-       'FLYEMLIB:AssertionFailed',...
-       ['number of training substacks should ' ...
-        'evenly divide batch size']);
-
-num_tot  = 0;
-n_ratios      = length(imdb.classes);
-num_per_class = zeros(1,n_ratios);
-for cc = 1:n_ratios-1
-  num_per_class(cc) = floor(n_examples * imdb.ratios(cc));
-  num_tot = num_tot + num_per_class(cc);
-end
-num_per_class(n_ratios) = n_examples - num_tot;
-
-for ii=iiss
-  for cc = 1:n_ratios
-    pts = randsample(imdb.pts{ii, cc}, num_per_class(cc), true);
-    %length(pts)<num_per_class(cc+1));
-  
-    [xa,ya,za] = ind2sub(size(imdb.data{ii}), pts);
-
-    n_pts = length(pts);
-    for jj = 1:n_pts
-      idx = idx + 1;
-      xx = xa(jj); yy = ya(jj); zz = za(jj);
-      
-      data_tmp = imdb.data{ii}(...
-          xx-ext_lower:xx+ext_upper,...
-          yy-ext_lower:yy+ext_upper,...
-          zz-ext_lower:zz+ext_upper);
-      if(corrupt_type == 0)
-        rr = randsample(patch_sz^3, num_corrupt);
-        data_tmp(rr) = 0;
-      end
-      if(corrupt_type == 1)
-        data_tmp = data_tmp + ...
-            sgm_corrupt * randn(patch_sz,patch_sz,patch_sz);
-      end
-      data(:,:,:,1,idx) = data_tmp;
-      if(imdb.is_autoencoder)
-        labels(1,1,1,1,idx) = imdb.data{ii}(xx,yy,zz);
-      else
-        % warning: this will be incorrect if imdb.classes is not valid
-        labels(1,1,1,1,idx) = 2*imdb.classes(cc)-1;
-      end
-    end
-  end
-end
-
-if(imdb.data_aug)
-  nn = size(data,5);
-  aug_rot = floor(4*rand(nn,1));
-  aug_ref = floor(2*rand(nn,1));
-
-  for ii=1:nn
-    if(aug_rot(ii))
-      for zz=1:size(data,3)
-        data(:,:,zz,1,ii) = rot90( data( :,:,zz,1,ii),aug_rot(ii));
-      end
-    end
-    if(aug_ref(ii))
-      for zz=1:size(data,3)
-        data(:,:,zz,1,ii) = fliplr(data(:,:,zz,1,ii));
-      end
-    end
-  end
 end

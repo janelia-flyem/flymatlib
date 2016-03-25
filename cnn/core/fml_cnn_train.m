@@ -106,6 +106,9 @@ if isstr(opts.errorFunction)
     case 'binary' % FML addition
       opts.errorFunction = @error_binary ;
       if isempty(opts.errorLabels), opts.errorLabels = {'binerr', 'seperr','l1err'} ; end
+    case 'combobj' % FML addition
+      opts.errorFunction = @error_combobj ;
+      if isempty(opts.errorLabels), opts.errorLabels = {'binerr', 'regerr'} ; end
     case 'real' % FML addition
       opts.errorFunction = @error_real ;
       if isempty(opts.errorLabels), opts.errorLabels = {'l1err'}; end
@@ -247,6 +250,22 @@ err(2,1) = sum(error(:)) / prod(labels_sz(1:3));
 error = (labels== 1).*(max(1-predictions,0)) + ...
         (labels==-1).*(max(predictions,0));
 err(3,1) = sum(error(:)) / prod(labels_sz(1:3));
+
+% --------------------------------------------------------------------
+function err = error_combobj(opts, labels, res) % FML addition
+% --------------------------------------------------------------------
+predictions = gather(res(end-1).x) ;
+labels_sz = size(labels);
+
+error = bsxfun(@times, predictions(:,:,:,1,:), ...
+               labels(:,:,:,1,:) ) < 0 ;
+err(1,1) = sum(error(:)) / prod(labels_sz(1:3));
+
+error = bsxfun(@minus, predictions(:,:,:,2:4,:), ...
+               labels(:,:,:,2:4,:) );
+pos_l = labels(:,:,:,1,:)>0;
+error = sqrt(sum(error.^2,4)) .* pos_l;
+err(2,1) = sum(error(:)) / sum(pos_l(:));
 
 % --------------------------------------------------------------------
 function err = error_real(opts, labels, res) % FML addition
