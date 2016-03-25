@@ -61,7 +61,7 @@ function tbar_voxel2obj(...
   end
   
   % get averaging filter, do convolution
-  ave_flt = set_filter(ave_radius);
+  ave_flt = fml_set_filter(ave_radius);
   ave_flt = ave_flt ./ sum(ave_flt(:));
   
   nan_mask = isnan(vv_pd);
@@ -91,7 +91,7 @@ function tbar_voxel2obj(...
   inds   = find(vv_pd > thresh);
   
   % get distance filter, initialize is_valid
-  dist_flt = logical(set_filter(obj_min_dist));
+  dist_flt = logical(fml_set_filter(obj_min_dist));
   is_valid = true(vv_pd_sz);
   
   % select top value, set as new object location, update is_valid
@@ -141,15 +141,4 @@ function tbar_voxel2obj(...
   cc_ctrs(2,:)   = vol_tot_2 - cc_ctrs(2,:) - 1;
   
   tbar_json_write(jsonoutputfile, cc_ctrs);
-end
-
-function flt = set_filter(radius)
-  flt_sz = 2*radius+1;
-
-  [xx, yy, zz] = ndgrid(...
-    -radius:radius,-radius:radius,-radius:radius);
-  dd = reshape(sqrt(xx(:).^2 + yy(:).^2 + zz(:).^2), ...
-               [flt_sz flt_sz flt_sz]);
-  
-  flt = double(dd <= radius);
 end
