@@ -265,7 +265,7 @@ error = bsxfun(@minus, predictions(:,:,:,2:4,:), ...
                labels(:,:,:,2:4,:) );
 pos_l = labels(:,:,:,1,:)>0;
 error = sqrt(sum(error.^2,4)) .* pos_l;
-err(2,1) = sum(error(:)) / sum(pos_l(:));
+err(2,1) = sum(error(:)) / (10*sum(pos_l(:))/numel(pos_l));
 
 % --------------------------------------------------------------------
 function err = error_real(opts, labels, res) % FML addition
