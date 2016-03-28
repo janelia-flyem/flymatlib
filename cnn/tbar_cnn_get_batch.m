@@ -98,4 +98,26 @@ if(imdb.data_aug)
       end
     end
   end
+
+  if(size(labels,4)>1) % also need to update x,y,z offsets
+    for ii=1:nn
+      if(aug_rot(ii))
+        switch aug_rot(ii)
+          case 1
+            labels(1,1,1,2:3,ii) = ...
+                [-labels(1,1,1,3,ii), ...
+                  labels(1,1,1,2,ii)];
+          case 2
+            labels(1,1,1,2:3,ii) = -labels(1,1,1,2:3,ii);
+          case 3
+            labels(1,1,1,2:3,ii) = ...
+                [ labels(1,1,1,3,ii), ...
+                 -labels(1,1,1,2,ii)];
+        end
+      end
+      if(aug_ref(ii))
+        labels(1,1,1,3,ii) = -labels(1,1,1,3,ii);
+      end
+    end
+  end
 end
