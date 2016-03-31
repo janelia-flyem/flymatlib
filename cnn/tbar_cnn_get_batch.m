@@ -85,6 +85,7 @@ if(imdb.data_aug)
   nn = size(data,5);
   aug_rot = floor(4*rand(nn,1));
   aug_ref = floor(2*rand(nn,1));
+  aug_fpz = floor(2*rand(nn,1));
 
   for ii=1:nn
     if(aug_rot(ii))
@@ -93,8 +94,34 @@ if(imdb.data_aug)
       end
     end
     if(aug_ref(ii))
-      for zz=1:size(data,3)
-        data(:,:,zz,1,ii) = fliplr(data(:,:,zz,1,ii));
+      data(:,:,:,1,ii) = fliplr(data(:,:,:,1,ii));
+    end
+    if(aug_fpz(ii))
+      data(:,:,:,1,ii) = flip(data(:,:,:,1,ii),3);
+    end
+  end
+
+  if(size(labels,4)>1) % also need to update x,y,z offsets
+    for ii=1:nn
+      if(aug_rot(ii))
+        switch aug_rot(ii)
+          case 1
+            labels(1,1,1,2:3,ii) = ...
+                [-labels(1,1,1,3,ii), ...
+                  labels(1,1,1,2,ii)];
+          case 2
+            labels(1,1,1,2:3,ii) = -labels(1,1,1,2:3,ii);
+          case 3
+            labels(1,1,1,2:3,ii) = ...
+                [ labels(1,1,1,3,ii), ...
+                 -labels(1,1,1,2,ii)];
+        end
+      end
+      if(aug_ref(ii))
+        labels(1,1,1,3,ii) = -labels(1,1,1,3,ii);
+      end
+      if(aug_fpz(ii))
+        labels(1,1,1,4,ii) = -labels(1,1,1,4,ii);
       end
     end
   end
