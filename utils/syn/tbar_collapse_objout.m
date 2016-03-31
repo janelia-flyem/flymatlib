@@ -1,5 +1,5 @@
 function [values_raw, values_conf, out] = tbar_collapse_objout(...
-  image_fn, out_fn, obj_thresh, values_raw, values_conf)
+  image_fn, out_fn, obj_thresh, ave_radius, values_raw, values_conf)
 % [values_raw, values_conf, out] = TBAR_COLLAPSE_OBJOUT(...
 %     image_fn, out_fn, obj_thresh, values_raw, values_conf)
 % collapse 4 channel object output (object + center predictions)
@@ -13,7 +13,7 @@ function [values_raw, values_conf, out] = tbar_collapse_objout(...
 %                single channel, which may be greater than 1,
 %                into confidence values
 %                if not specified, then set using empirical CDF
-  
+
   if(ischar(image_fn))
     im = read_image_stack(image_fn);
   else
@@ -22,11 +22,14 @@ function [values_raw, values_conf, out] = tbar_collapse_objout(...
   if(~exist('obj_thresh','var') || isempty(obj_thresh))
     obj_thresh = 0.2;
   end
-  
+  if(~exist('ave_radius','var'))
+    ave_radius = [];
+  end
+
   sz = size(im);
-  
+
   [xx,yy,zz] = ind2sub(sz(1:3), find(im(:,:,:,1)>obj_thresh));
-  
+
   oo = ones(size(xx));
   xn = round(xx + im(sub2ind(sz,xx,yy,zz,2*oo)));
   yn = round(yy + im(sub2ind(sz,xx,yy,zz,3*oo)));
@@ -38,17 +41,25 @@ function [values_raw, values_conf, out] = tbar_collapse_objout(...
         out(xn(ii),yn(ii),zn(ii)) + im(xx(ii),yy(ii),zz(ii),1);
   end
 
+  % do some spatial smoothing
+  if(~isempty(ave_radius) && ave_radius > 0)
+    ave_flt = fml_set_filter(ave_radius);
+    ave_flt = ave_flt ./ sum(ave_flt(:));
+    out     = convolution3D_FFTdomain(out, ave_flt);
+    out(out<1) = 0;
+  end
+
   if(~exist('values_raw','var') || isempty(values_raw))
     [values_conf, values_raw] = ecdf(out(out>0));
     % ensure values are unique for using in interp1
     [values_raw, values_idx] = unique(values_raw);
     values_conf              = values_conf(values_idx);
   end
-  
+
   % convert raw values into confidences
   cc = interp1(values_raw, values_conf, out(out>0));
   out(out > 0) = cc;
-  
+
   if(exist('out_fn','var') && ~isempty(out_fn))
     if(exist(out_fn,'file'))
       delete(out_fn);

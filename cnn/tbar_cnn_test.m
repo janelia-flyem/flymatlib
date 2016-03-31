@@ -3,7 +3,7 @@ function [num_tp, tot_pred, tot_gt, values_raw, values_conf] = ...
                 n_workers, ...
                 dist_thresh, thds, ave_radius, obj_min_dist, ...
                 remove_buffer_radius, vol_sz, ...
-                values_raw, values_conf)
+                obj_ave_radius, values_raw, values_conf)
 % TBAR_CNN_TEST tbar cnn precision/recall
 % [num_tp, tot_pred, tot_gt] = ...
 %   TBAR_CNN_TEST(net, exp_dir, epoch, image_fn, test_json, ...
@@ -21,7 +21,8 @@ function [num_tp, tot_pred, tot_gt, values_raw, values_conf] = ...
 %   dist_thresh, thds, ave_radius, obj_min_dist, ...
 %   remove_buffer_radius, vol_sz   see tbar_pr_curve
 %
-%   values_raw, values_conf   see tbar_collapse_objout
+%   obj_ave_radius, values_raw, values_conf
+%      see tbar_collapse_objout
 
   if(~exist(exp_dir,'dir'))
     system(sprintf('mkdir -p %s', exp_dir));
@@ -32,13 +33,16 @@ function [num_tp, tot_pred, tot_gt, values_raw, values_conf] = ...
   if(~exist('vol_sz','var'))
     vol_sz = [];
   end
+  if(~exist('obj_ave_radius','var'))
+    obj_ave_radius = [];
+  end
   if(~exist('values_raw','var'))
     values_raw = [];
   end
   if(~exist('values_conf','var'))
     values_conf = [];
   end
-  
+
   if(strcmp(net.layers{end}.type, 'objout'))
     is_objout = true;
   else
@@ -60,20 +64,21 @@ function [num_tp, tot_pred, tot_gt, values_raw, values_conf] = ...
   else
     out_fn_c = out_fn;
   end
-    
+
   if(isempty(epoch) || ~exist(out_fn_c,'file'))
     tbar_cnn_infer(net, image_fn, out_fn_c, n_workers);
   end
   if(is_objout)
     [values_raw, values_conf] = ...
         tbar_collapse_objout(out_fn_c, out_fn, [], ...
+                             obj_ave_radius, ...
                              values_raw, values_conf);
   end
   if(isempty(epoch) || ~exist(thd_json,'file'))
     tbar_voxel2obj(out_fn, out_json, thds(1), ...
                    ave_radius, obj_min_dist);
   end
-  
+
   pr_out = sprintf('%s/%s_out%s_thds%g-%g_dt%g.mat', ...
                    exp_dir, prefix, suffix, ...
                    thds(1), thds(end), dist_thresh);
