@@ -343,6 +343,8 @@ for i=1:n
 
     case 'sigmoid'
       res(i+1).x = vl_nnsigmoid(res(i).x) ;
+    case 'objout' % FML addition
+      res(i+1).x = fml_nnobjout(res(i).x);
 
     case 'noffset'
       res(i+1).x = vl_nnnoffset(res(i).x, l.param) ;

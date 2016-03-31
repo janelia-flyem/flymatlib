@@ -38,7 +38,12 @@ function out = tbar_cnn_infer(net, image_fn, out_fn, ...
 
   xx=xx(:); yy=yy(:); zz=zz(:);
 
-  out = zeros(im_sz,'single');
+  last_conv = length(net.layers);
+  while(~isfield(net.layers{last_conv},'weights'))
+    last_conv = last_conv-1;
+  end
+  n_out = size(net.layers{last_conv}.weights{1},5);
+  out   = zeros([im_sz n_out],'single');
   
   n_cubes = length(xx);
   coords  = zeros(n_cubes,6);
@@ -91,7 +96,7 @@ function out = tbar_cnn_infer(net, image_fn, out_fn, ...
       for xo=0:rf_stride(1)-1
         for yo=0:rf_stride(1)-1
           for zo=0:rf_stride(1)-1
-            out(xi+xo,yi+yo,zi+zo) = res{ii}{1}{jj};
+            out(xi+xo,yi+yo,zi+zo,:) = res{ii}{1}{jj};
           end
         end
       end
@@ -104,7 +109,10 @@ function out = tbar_cnn_infer(net, image_fn, out_fn, ...
     end
     chunk_size = [30 30 30];
     chunk_size = min(chunk_size, im_sz);
-    h5create(out_fn,'/main',im_sz,...
+    if(n_out > 1)
+      chunk_size = [chunk_size 1];
+    end
+    h5create(out_fn,'/main',size(out),...
              'Datatype','single',...
              'Chunksize', chunk_size, ...
              'Deflate', 4, ...
