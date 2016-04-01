@@ -335,7 +335,7 @@ for i=1:n
       res(i+1).x = fml_nnsquaredloss(res(i).x, l.class) ;
     case 'objloss' % FML addition
       res(i+1).x = fml_nncombobjloss(res(i).x, l.class, ...
-                                     l.target, l.rnorm);
+                                     l.target, l.robj, l.rnorm);
 
     case 'relu'
       if l.leak > 0, leak = {'leak', l.leak} ; else leak = {} ; end
@@ -473,7 +473,7 @@ if doder
                                         res(i+1).dzdx);
       case 'objloss' % FML addition
         res(i).dzdx = fml_nncombobjloss(res(i).x, l.class, ...
-                                        l.target, l.rnorm, ...
+                                        l.target, l.robj, l.rnorm, ...
                                         res(i+1).dzdx);
 
       case 'relu'

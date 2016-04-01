@@ -11,7 +11,7 @@ c(2,3,1,1,2) = 1;
 c(2,3,1,4,2) = -0.2;
 X(2,3,1,2:4,2) = 0;
 
-Y  = fml_nncombobjloss(X,c,1,0.9);
+Y  = fml_nncombobjloss(X,c,1,0,0.9);
 Y1 = fml_nnsigentloss(X(:,:,:,1,:), c(:,:,:,1,:), 1);
 Y2 = (1.5/0.9 - 0.5 + 0.5*(0.2/0.9)^2)/27;
 
@@ -27,8 +27,8 @@ c(4,4,1,1,3) = 0;
 tt = 0.9;
 rnorm = 1.1;
 
-obj = fml_nncombobjloss(X,c,tt,rnorm);
-dx  = fml_nncombobjloss(X,c,tt,rnorm,1);
+obj = fml_nncombobjloss(X,c,tt,0.5,rnorm);
+dx  = fml_nncombobjloss(X,c,tt,0.5,rnorm,1);
 
 for ii=1:5
   for jj=1:6
@@ -37,7 +37,7 @@ for ii=1:5
         for mm=1:3
           X2 = X;
           X2(ii,jj,kk,ll,mm) = X(ii,jj,kk,ll,mm)+dd;
-          obj2 = fml_nncombobjloss(X2,c,tt,rnorm);
+          obj2 = fml_nncombobjloss(X2,c,tt,0.5,rnorm);
           dx_n = (obj2-obj)/dd;
           fprintf('[%g]', abs(dx(ii,jj,kk,ll,mm)-dx_n));
           assert( abs(dx(ii,jj,kk,ll,mm)-dx_n) < tol );

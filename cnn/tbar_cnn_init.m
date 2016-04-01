@@ -8,7 +8,7 @@ function net = tbar_cnn_init(model_str)
 %     r    - Relu
 %     d    - Dropout
 %     eT   - sigmoid + cross-Entropy loss, T target
-%     oTxN - object loss, T target, N normalize
+%     oTxRxN - object loss, T target, R obj radius, N normalize
 
   net.layers = {};
   bias_c     = 0;
@@ -88,16 +88,17 @@ function net = tbar_cnn_init(model_str)
 
       case 'o'
         cc = strsplit(mm{ii}(2:end),'x');
-        assert(length(cc)==2, 'FML:AssertionFailed', ...
+        assert(length(cc)==3, 'FML:AssertionFailed', ...
                'misspecified objloss layer');
         c_tg = str2double(cc{1});
-        r_nm = str2double(cc{2});
-        assert(~isnan(c_tg) && ~isnan(r_nm), ...
+        r_ob = str2double(cc{2});
+        r_nm = str2double(cc{3});
+        assert(~isnan(c_tg) && ~isnan(r_ob) && ~isnan(r_nm), ...
                'FML:AssertionFailed', ...
                'misspecified objloss layer');
         net.layers{end+1} = struct(...
             'type', 'objloss', ...
-            'target', c_tg, 'rnorm', r_nm);
+            'target', c_tg, 'robj', r_ob, 'rnorm', r_nm);
 
       otherwise
         assert(false, 'FML:AssertionFailed', ...
