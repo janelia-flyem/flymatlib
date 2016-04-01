@@ -1,0 +1,392 @@
+{
+  "data": [
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   61, 
+		   15, 
+		   3  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   239, 
+		   15, 
+		   46  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   46, 
+		   211, 
+		   48  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   16, 
+		   207, 
+		   54  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   164, 
+		   110, 
+		   56  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   101, 
+		   137, 
+		   61  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   243, 
+		   4, 
+		   68  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   194, 
+		   249, 
+		   83  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   146, 
+		   206, 
+		   98  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   96, 
+		   211, 
+		   104  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   158, 
+		   111, 
+		   123  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   33, 
+		   222, 
+		   125  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   18, 
+		   14, 
+		   130  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   78, 
+		   161, 
+		   131  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   19, 
+		   182, 
+		   132  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   232, 
+		   142, 
+		   142  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   83, 
+		   116, 
+		   146  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   13, 
+		   35, 
+		   147  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   179, 
+		   121, 
+		   148  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   46, 
+		   33, 
+		   168  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   19, 
+		   233, 
+		   174  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   88, 
+		   16, 
+		   181  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   80, 
+		   244, 
+		   187  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   248, 
+		   97, 
+		   194  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   52, 
+		   197, 
+		   206  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   54, 
+		   140, 
+		   206  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   79, 
+		   21, 
+		   232  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   220, 
+		   39, 
+		   236  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } ,
+    { 
+	 "T-bar": { 
+		"status": "working", 
+		"confidence": 1, 
+		"body ID": -1, 
+		"location": [ 
+		   41, 
+		   6, 
+		   247  
+		 ] 
+	 }, 
+	"partners": [  ]
+    } 
+  ],
+  "metadata": {
+	  "username": "dummy",
+	  "software version": "dummy",
+	  "description": "synapse annotations",
+	  "file version": 1, 
+	  "software version": "dummy",
+	  "computer": "dummy",
+	  "date": "dummy",
+	  "session path": "dummy",
+	  "software": "dummy"
+  }
+}

@@ -16,7 +16,7 @@ function fml_setup()
                'matconvnet', 'matlab', 'vl_setupnn.m'));
   run(fullfile(fmlpath, 'third_party', ...
                'mexconv3d', 'setup_path.m'));
-  
+
   addpath(fmlpath);
   addpath(fullfile(fmlpath, 'cnn'                       ));
   addpath(fullfile(fmlpath, 'cnn',         'core'       ));
@@ -24,4 +24,5 @@ function fml_setup()
   addpath(fullfile(fmlpath, 'utils',       'syn'        ));
   addpath(fullfile(fmlpath, 'third_party'               ));
   addpath(fullfile(fmlpath, 'third_party', 'export_fig' ));
+  addpath(fullfile(fmlpath, 'examples'                  ));
 end

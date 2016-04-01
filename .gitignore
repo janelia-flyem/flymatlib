@@ -6,3 +6,6 @@ fml_dist/readme.txt
 fml_dist/requiredMCRProducts.txt
 fml_dist/run_fml_dist.sh
 fml_dist/run_fml_dist_single.sh
+examples/ex_cube?_labels.h5
+examples/ex_cube?_mask.h5
+examples/fml_example/*
