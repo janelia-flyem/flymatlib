@@ -1,4 +1,4 @@
-function make_all()
+function make_all(use_gpu, use_openmp)
 % adopted from the VL_COMPILENN.m which is part of MatConvNet toolbox
 %
 % Modify the options for different ways of compilation:
@@ -16,8 +16,14 @@ function make_all()
 % the terms of the BSD license (see the COPYING file).
 
 %% Options
-opts.enableGpu        = true;
-opts.enableOpenmp     = true;
+if(~exist('use_gpu','var') || isempty(use_gpu))
+  use_gpu = false;
+end
+if(~exist('use_openmp') || isempty(use_openmp))
+  use_openmp = false;
+end
+opts.enableGpu        = use_gpu;
+opts.enableOpenmp     = use_openmp;
 opts.verbose          = 1;
 opts.debug            = false;
 opts.printLog         = false;
@@ -34,16 +40,16 @@ if opts.enableGpu
 else
   opts.cudaMethod = '';
 end
-opts.enableCudnn = false; 
+opts.enableCudnn = false;
 % not implemented yet (3D conv may be available in future cudnn release?)
 %% Files to compile
 %%% mex gateway source
-mex_src = {} ; 
+mex_src = {} ;
 mex_src{end+1} = fullfile('mex_conv3d.cpp');
 mex_src{end+1} = fullfile('mex_maxpool3d.cpp');
 
 %%% lib source
-lib_src = {} ; 
+lib_src = {} ;
 % max pool3d
 lib_src{end+1} = fullfile('maxpool3d.cpp') ;
 lib_src{end+1} = fullfile('_maxpool3d_cpu.cpp') ;
@@ -77,7 +83,7 @@ arch = computer('arch') ;
 if opts.enableGpu
   if isempty(opts.cudaRoot), opts.cudaRoot = search_cuda_devkit(opts); end
   check_nvcc(opts.cudaRoot);
-  if opts.verbose 
+  if opts.verbose
     fprintf('%s:\tCUDA: using CUDA Devkit ''%s''.\n', ...
                           mfilename, opts.cudaRoot) ;
   end
@@ -91,7 +97,7 @@ if opts.enableGpu
 
   % CUDA arch string (select GPU architecture)
   if isempty(opts.cudaArch), opts.cudaArch = get_cuda_arch(opts) ; end
-    if opts.verbose 
+    if opts.verbose
       fprintf('%s:\tCUDA: NVCC architecture string: ''%s''.\n', ...
          mfilename, opts.cudaArch) ;
     end
@@ -124,7 +130,7 @@ if strcmp(arch, 'win64')
 end
 if opts.verbose > 1, flags.cc{end+1} = '-v' ; end
 if opts.enableGpu
-  flags.cc{end+1} = '-DWITH_GPUARRAY' ; 
+  flags.cc{end+1} = '-DWITH_GPUARRAY' ;
 end
 if opts.enableCudnn
   flags.cc{end+1} = '-DENABLE_CUDNN' ;
@@ -169,7 +175,7 @@ if strcmp(arch, 'maci64')
   flags.mexcc{end+1} = 'CXXFLAGS=$CXXFLAGS -stdlib=libstdc++' ;
   flags.link{end+1} = 'LDFLAGS=$LDFLAGS -stdlib=libstdc++' ;
 end
-if opts.enableGpu 
+if opts.enableGpu
   flags.mexcc{end+1} = ...
     ['-I"',...
     fullfile(matlabroot, 'toolbox','distcomp','gpu','extern','include'),...
@@ -177,7 +183,7 @@ if opts.enableGpu
 end
 
 % For the MEX command: mexcu
-if opts.enableGpu 
+if opts.enableGpu
   flags.mexcu = flags.cc ;
   flags.mexcu{end+1} = '-cxx' ;
   flags.mexcu(end+1:end+2) = {'-f' mex_cuda_config(root)} ;
@@ -211,7 +217,7 @@ end
 
 % For -largeArrayDims
 flags.mexcc{end+1} = '-largeArrayDims';
-if opts.enableGpu 
+if opts.enableGpu
   flags.mexcu{end+1} = '-largeArrayDims';
 end
 
@@ -255,8 +261,8 @@ if (~exist(bld_dir,'dir')), mkdir(bld_dir); end
 
 % Intermediate object files
 srcs = horzcat(lib_src,mex_src) ;
-%%% compiling all with nvcc is slow but is necessary when 
-%%% debugging cuda code 
+%%% compiling all with nvcc is slow but is necessary when
+%%% debugging cuda code
 for i = 1 : numel( srcs )
   if strcmp(opts.cudaMethod,'nvcc')
     nvcc_compile(opts, srcs{i}, toobj(bld_dir,srcs{i}), flags.nvcc) ;
@@ -265,10 +271,10 @@ for i = 1 : numel( srcs )
   end
 end
 
-%%% this code compiles faster, but cannot debug the cuda code 
+%%% this code compiles faster, but cannot debug the cuda code
 % for i = 1 : numel( srcs )
 %   [~,~,ext] = fileparts(srcs{i});
-%   if strcmp(ext, '.cu') 
+%   if strcmp(ext, '.cu')
 %     if strcmp(opts.cudaMethod,'nvcc')
 %       nvcc_compile(opts, srcs{i}, toobj(bld_dir,srcs{i}), flags.nvcc) ;
 %     else
@@ -313,7 +319,7 @@ end
 function mex_compile(opts, src, tgt, mex_opts)
 % --------------------------------------------------------------------
 mopts = {'-outdir', fileparts(tgt), src, '-c', mex_opts{:}} ;
-if opts.verbose 
+if opts.verbose
   fprintf('%s: MEX: %s\n', mfilename, strjoin(mopts)) ;
 end
 mex(mopts{:}) ;
@@ -324,7 +330,7 @@ nvcc_path = fullfile(opts.cudaRoot, 'bin', 'nvcc');
 nvcc_cmd = sprintf('"%s" -c "%s" %s -o "%s"', ...
                    nvcc_path, src, ...
                    strjoin(nvcc_opts), tgt);
-if opts.verbose 
+if opts.verbose
   fprintf('%s: CUDA: %s\n', mfilename, nvcc_cmd) ;
 end
 status = system(nvcc_cmd);
@@ -333,7 +339,7 @@ if status, error('Command %s failed.', nvcc_cmd); end;
 function mex_link(opts, objs, mex_dir, mex_flags)
 % --------------------------------------------------------------------
 mopts = {'-outdir', mex_dir, mex_flags{:}, objs{:}} ;
-if opts.verbose 
+if opts.verbose
   fprintf('%s: MEX linking: %s\n', mfilename, strjoin(mopts)) ;
 end
 mex(mopts{:}) ;
@@ -486,7 +492,7 @@ end
 
 function cudaArch = get_cuda_arch(opts)
 % --------------------------------------------------------------------
-if opts.verbose 
+if opts.verbose
   fprintf(['%s:\tCUDA: ',...
     'determining GPU compute capability ',...
     '(use the ''CudaArch'' option to override)\n'], mfilename);
@@ -498,7 +504,7 @@ try
       sprintf('-gencode=arch=compute_%s,code=\\\"sm_%s,compute_%s\\\" ', ...
               arch_code, arch_code, arch_code) ;
 catch
-  if opts.verbose 
+  if opts.verbose
     fprintf(['%s:\tCUDA: ',...
       'cannot determine the capabilities of the installed GPU;' ...
       'falling back to default\n'], mfilename);
