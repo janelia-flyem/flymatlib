@@ -3,7 +3,10 @@ flymatlib : FlyEM Matlab library
 
 overview of features:
 
-* 3d deep learning / convolutional neural networks for electron microscopy (EM) analysis, using MatConvNet and MexConv3d
+* 3d deep learning / convolutional neural networks for electron
+  microscopy (EM) analysis, using `MatConvNet
+  <http://www.vlfeat.org/matconvnet/>`_ and `MexConv3d
+  <https://github.com/pengsun/MexConv3D>`_
 
 * distributed inference over Grid Engine cluster
 
@@ -83,3 +86,7 @@ ______
 
 example usage for synapse detection
 ___________________________________
+
+see ``examples/fml_tbar_classifier_example.m`` for an example script
+that demonstrates CNN synapse (T-bar) detector training, inference,
+and precision/recall computation.
