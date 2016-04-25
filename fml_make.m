@@ -3,7 +3,7 @@ function fml_make(single_threaded)
 
   if(exist('single_threaded','var') && ...
      single_threaded)
-    mcc_out = '-o fml_dist_single -R singleCompThread';
+    mcc_out = '-o fml_dist_single -R -singleCompThread';
   else
     mcc_out = '-o fml_dist';
   end
