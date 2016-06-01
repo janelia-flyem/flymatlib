@@ -87,8 +87,9 @@ function tbar_voxel2obj(...
   vv_pd(:,:,[1:pad_radius, end-pad_radius+1:end]) = 0;
 
   % select top points
-  quantile_cutoff = 0.975;
-  thresh = quantile(vv_pd(:), quantile_cutoff);
+  % quantile_cutoff = 0.975;
+  % thresh = quantile(vv_pd(:), quantile_cutoff);
+  thresh = 0.3;
   inds   = find(vv_pd > thresh);
 
   % get distance filter, initialize is_valid
