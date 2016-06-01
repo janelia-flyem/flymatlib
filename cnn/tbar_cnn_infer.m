@@ -21,6 +21,13 @@ function out = tbar_cnn_infer(net, image_fn, out_fn, ...
     copies  = cell(1,size(offsets,2));
   end
 
+  use_gpu  = false;
+  num_gpus = 4;
+  if(isequal(n_workers, 'gpu'))
+    use_gpu   = true;
+    n_workers = num_gpus;
+  end
+
   im_sz    = get_h5_size(image_fn);
   net_info = fml_simplenn_display(...
     net, 'inputSize', [im_sz(1:2) 1 1]);
@@ -75,15 +82,29 @@ function out = tbar_cnn_infer(net, image_fn, out_fn, ...
   end
   save(net_fn, 'net');
 
-  if(n_workers > 1)
-    fml_exe = fml_get_exe(true);
-    res = fml_qsub(@tbar_cnn_infer_worker, ...
-                   [],[],[],-1, ...
-                   DFEVAL_DIR, fml_exe, ...
-                   {net_fn},{image_fn},coords);
+  if(~use_gpu)
+    if(n_workers > 1)
+      fml_exe = fml_get_exe(true);
+      res = fml_qsub(@tbar_cnn_infer_worker, ...
+                     [],[],[],-1, ...
+                     DFEVAL_DIR, fml_exe, ...
+                     {net_fn},{image_fn},coords);
+    else
+      res{1}{1} = tbar_cnn_infer_worker(...
+          net_fn, image_fn, coords{1});
+    end
   else
-    res{1}{1} = tbar_cnn_infer_worker(...
-        net_fn, image_fn, coords{1});
+    if(isempty(gcp('nocreate')))
+      parpool('local',num_gpus);
+      spmd, gpuDevice(labindex), end
+    end
+    spmd(num_gpus)
+      resg = tbar_cnn_infer_worker(...
+          net_fn, image_fn, coords{labindex}, true);
+    end
+    for ii=1:num_gpus
+      res{ii}{1} = resg{ii};
+    end
   end
 
   for ii=1:n_workers
