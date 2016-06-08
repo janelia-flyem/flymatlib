@@ -3,7 +3,7 @@ function [im_mean, im_std, empty_vol] = get_image(...
     do_normalize, bg_vals_to_nan)
 
   if(exist(image_fn, 'file')), delete(image_fn); end
-  max_tries = 5;
+
   dvid_cmd  = ...
       sprintf(['%s get ' ...
                '"%s/api/node/%s/grayscale/raw/0_1_2/' ...
@@ -13,22 +13,7 @@ function [im_mean, im_std, empty_vol] = get_image(...
               vol_sz(1),    vol_sz(2),    vol_sz(3),    ...
               vol_start(1), vol_start(2), vol_start(3), ...
               this.user_string, image_fn);
-  st = system(dvid_cmd);
-  num_tries = 1;
-  while(st ~= 0 && num_tries < max_tries)
-    fprintf('status code = %d ,', st);
-    if(st ~= 5) % not 503 unavailable from throttling
-      num_tries = num_tries+1;
-    end
-    pause(30);
-
-    fprintf('retrying...\n');
-    st = system(dvid_cmd);
-  end
-  if(st ~= 0)
-    error('error connecting to dvid: %s/%s/', ...
-          this.machine_name, this.repo_name);
-  end
+  this.run_dvid_cmd(dvid_cmd);
 
   fid = fopen(image_fn);
   assert(fid>0, 'FML:AssertionFailed', ...
@@ -70,8 +55,8 @@ function [im_mean, im_std, empty_vol] = get_image(...
       im_mean = do_normalize(1);
       im_std  = do_normalize(2);
     end
-    fprintf('normalizing by mean: %d / std: %d\n', ...
-            im_mean, im_std);
+    % fprintf('normalizing by mean: %d / std: %d\n', ...
+    %         im_mean, im_std);
     im = (im - im_mean) ./ im_std;
   else
     im_mean = [];
