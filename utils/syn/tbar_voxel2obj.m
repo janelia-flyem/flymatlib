@@ -1,4 +1,4 @@
-function tbar_voxel2obj(...
+function tbars = tbar_voxel2obj(...
     fn_voxel, jsonoutputfile, thd, ave_radius, obj_min_dist, ...
     vol_offset, buffer_sz, vol_tot_2, from_ilastik)
 % TBAR_VOXEL2OBJ tbar produce pointwise annotations to json file
@@ -13,6 +13,8 @@ function tbar_voxel2obj(...
 %   vol_offset     volume offset in global coordinates
 %   buffer_sz      size of buffer to ignore
 %   vol_tot_2      y (2nd) dimension total size (for conversion)
+%                    specify only for conversion to Raveler
+%                    otherwise leave empty for no conversion (DVID)
 %   from_ilastik   if fn_voxel was produced by ilastik
 
   if(~exist('vol_offset','var') || isempty(vol_offset))
@@ -37,8 +39,10 @@ function tbar_voxel2obj(...
   vv_pd      = zeros(vv_sz(1:3) + 2*pad_radius);
   vv_pd_sz   = size(vv_pd);
 
-  if(~exist('vol_tot_2','var') || isempty(vol_tot_2))
-    vol_tot_2 = vv_sz(2);
+  % old behavior was to default to vv_sz(2)
+  % now set as empty and only convert later if not empty
+  if(~exist('vol_tot_2','var'))
+    vol_tot_2 = [];
   end
 
   % pad volume for easier indexing
@@ -139,8 +143,12 @@ function tbar_voxel2obj(...
   % shift to global coordinates and 0-based indexing
   cc_ctrs(1:3,:) = bsxfun(@plus, cc_ctrs(1:3,:), ...
                           vol_offset') - 1;
+
   % shift to raveler coordinates
-  cc_ctrs(2,:)   = vol_tot_2 - cc_ctrs(2,:) - 1;
+  if(~isempty(vol_tot_2))
+    cc_ctrs(2,:)   = vol_tot_2 - cc_ctrs(2,:) - 1;
+  end
 
   tbar_json_write(jsonoutputfile, cc_ctrs);
+  tbars = cc_ctrs;
 end
