@@ -1,8 +1,9 @@
 function [pps, rrs, num_tp, tot_pred, tot_gt, ...
           num_tp_cont, tp_scores] = tbar_pr_curve(...
-            fn_predict, fn_groundtruth, dist_thresh, thds, ...
-            remove_buffer_radius, vol_sz, allow_mult, ...
-            offset_gt, offset_pd, seg_fn, require_full_conf)
+              fn_predict, fn_groundtruth, dist_thresh, thds, ...
+              remove_buffer_radius, vol_sz, allow_mult, ...
+              offset_gt, offset_pd, seg_fn, require_full_conf, ...
+              flip_y)
 % TBAR_PR_CURVE compute tbar precision/recall
 % [pps, rrs, num_tp, tot_pred, tot_gt, ...
 %  num_tp_cont, tp_scores] = TBAR_PR_CURVE(...
@@ -25,6 +26,8 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
 %   seg_fn                 segmentation filename
 %                            (to apply segmentation constraint)
 %   require_full_conf      only use gt loc with conf=1.0
+%   flip_y                 set to true if files are in differing
+%                            coordinates (raveler/dvid)
 
 
   if(~exist('remove_buffer_radius', 'var') || ...
@@ -52,7 +55,13 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
      isempty(require_full_conf))
     require_full_conf = false;
   end
-  
+  if(~exist('flip_y','var') || isempty(flip_y))
+    flip_y = false;
+  end
+  assert(~flip_y || ~isempty(vol_sz), ...
+         'FML:AssertionFailed', ...
+         'must specify vol_sz if using flip_y');
+
   locs_groundtruth = tbar_json2locs(fn_groundtruth, offset_gt, ...
 				    true);
   if(require_full_conf)
@@ -77,24 +86,27 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
   num_tp   = zeros(n_thds,1);
   tot_pred = zeros(n_thds,1);
   tot_gt   = zeros(n_thds,1);
-  
+
   num_tp_cont = zeros(n_thds,1);
   tp_scores   = cell(n_thds,1);
-  
+
   locs_predict_orig  = tbar_json2locs(fn_predict, offset_pd, ...
                                       true);
   if(~isempty(remove_buffer_radius))
     locs_predict_orig = tbar_remove_border(...
       locs_predict_orig, vol_sz, remove_buffer_radius);
   end
-  
-  
+  if(flip_y)
+    locs_predict_orig(2,:) = vol_sz(2) - ...
+        locs_predict_orig(2,:) - 1;
+  end
+
   for ii = 1:n_thds
     tt = thds(ii);
-    
+
     valid_tbars = locs_predict_orig(4,:) >= tt;
     locs_predict = locs_predict_orig(1:3,valid_tbars);
-    
+
     if(~isempty(seg_fn))
       seg_predict = tbar_locs2seg(locs_predict, seg_fn);
     else
@@ -103,14 +115,14 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
 
     % avoid issue when there is only a single or no predictions
     if(sum(valid_tbars) < 2)
-      pps(ii)         = 0; 
+      pps(ii)         = 0;
       rrs(ii)         = 0;
       num_tp(ii)      = 0;
       tot_pred(ii)    = 0;
       tot_gt(ii)      = tot_gt(ii-1);
       num_tp_cont(ii) = 0;
       tp_scores{ii}   = [];
-    else    
+    else
       [pps(ii), rrs(ii), num_tp(ii), tot_pred(ii), tot_gt(ii), ...
        num_tp_cont(ii), tp_scores{ii}] = ...
         tbar_pr(locs_predict, locs_groundtruth, dist_thresh, ...
