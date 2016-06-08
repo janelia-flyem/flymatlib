@@ -27,8 +27,9 @@ function tbar_cnn_full_infer_worker(net, work_dir, num_cubes)
       end
     end
 
-    % run infer on images/fn.h5
-    [~,base_fn] = fileparts(dd(1).name);
+    % run infer on oldest images/fn.h5
+    [~,ii]      = min([dd.datenum]);
+    [~,base_fn] = fileparts(dd(ii).name);
     image_fn    = sprintf('%s/images/%s.h5', work_dir, base_fn);
     out_fn      = sprintf('%s/infer/%s.h5',  work_dir, base_fn);
     tbar_cnn_infer(net, image_fn, out_fn, 'gpu');
