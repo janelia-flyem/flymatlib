@@ -23,8 +23,9 @@ function tbar_cnn_full_infer(work_dir, vol_start_fn, ...
   system(sprintf('mkdir -p %s',        work_dir));
   system(sprintf('mkdir -p %s/status', work_dir));
   system(sprintf('mkdir -p %s/images', work_dir));
-  system(sprintf('mkdir -p %s/infer', work_dir));
-  system(sprintf('mkdir -p %s/json', work_dir));
+  system(sprintf('mkdir -p %s/infer',  work_dir));
+  system(sprintf('mkdir -p %s/json',   work_dir));
+  system(sprintf('mkdir -p %s/mat',    work_dir));
 
   % shift over vol_start and expand vol_sz to accomodate buffer_sz
   if(isscalar(buffer_sz))
@@ -54,8 +55,10 @@ function tbar_cnn_full_infer(work_dir, vol_start_fn, ...
     while(~exist(infer_st, 'file')), pause(10), end
     infer_fn = sprintf('%s/infer/%s.h5',  work_dir, base_fn);
     json_fn  = sprintf('%s/json/%s.json', work_dir, base_fn);
-    tbar_voxel2obj(infer_fn, json_fn, obj_thresh, ...
-                   ave_radius, obj_min_dist);
+    tbars = tbar_voxel2obj(infer_fn, json_fn, obj_thresh, ...
+                           ave_radius, obj_min_dist, ...
+                           vol_start(ii,:), buffer_sz, []);
+    save_tbars(sprintf('%s/mat/%s.mat', work_dir, base_fn), tbars);
 
     % touch status/fn.done, rm status/fn.infer
     system(sprintf('touch %s', done_st));
@@ -64,4 +67,8 @@ function tbar_cnn_full_infer(work_dir, vol_start_fn, ...
     system(sprintf('rm %s', image_fn));
     system(sprintf('rm %s', infer_fn));
   end
+end
+
+function save_tbars(fn, tbars) %#ok<INUSD>
+  save(fn, 'tbars');
 end
