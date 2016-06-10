@@ -67,6 +67,13 @@ function tbar_cnn_full_infer(work_dir, vol_start_fn, ...
     system(sprintf('rm %s', image_fn));
     system(sprintf('rm %s', infer_fn));
   end
+
+  for ii=1:n_substacks
+    tt = load(sprintf('%s/mat/%06d.mat', work_dir, ii));
+    tbars{1,ii} = tt.tbars;
+  end
+  tbars = cell2mat(tbars);
+  save(sprintf('%s/tbars.mat', work_dir), 'tbars');
 end
 
 function save_tbars(fn, tbars) %#ok<INUSD>
