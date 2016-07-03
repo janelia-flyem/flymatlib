@@ -50,12 +50,63 @@ classdef dvid_connection
       end
     end
 
+    function branch(this, note)
+      dvid_cmd = sprintf(...
+          ['curl -s -f -X POST %s/api/node/%s/branch ' ...
+           '-d ''{"note": "%s"}'''], ...
+          this.machine_name, this.repo_name, note);
+      st = system(dvid_cmd);
+
+      if(st ~= 0)
+        error('error connecting to dvid: %s', dvid_cmd);
+      end
+    end
+
+    function create_instance(this, typename, dataname)
+      assert(ismember(typename, ...
+                      {'annotation', 'labelblk', 'labelvol'}), ...
+             'FML:AssertionFailed', ...
+             sprintf('unknown typename: %s', typename));
+
+      dvid_cmd = sprintf(...
+          ['curl -s -f -X POST %s/api/repo/%s/instance ' ...
+           '-d ''{"typename": "%s", "dataname": "%s"}'''], ...
+          this.machine_name, this.repo_name, ...
+          typename, dataname);
+      st = system(dvid_cmd);
+
+      if(st ~= 0)
+        error('error connecting to dvid: %s', dvid_cmd);
+      end
+    end
+
+    function sync(this, dataname, syncname, do_reverse)
+      dvid_cmd = sprintf(...
+          ['curl -s -f -X POST %s/api/node/%s/%s/sync ' ...
+           '-d ''{"sync": "%s"}'''], ...
+          this.machine_name, this.repo_name, ...
+          dataname, syncname);
+      st = system(dvid_cmd);
+
+      if(st ~= 0)
+        error('error connecting to dvid: %s', dvid_cmd);
+      end
+
+      if(exist('do_reverse','var') && do_reverse)
+        this.sync(syncname, dataname);
+      end
+    end
+
+
     % defined externally
     [im_mean, im_std, empty_vol] = get_image(...
         this, vol_start, vol_sz, image_fn, ...
         do_normalize, bg_vals_to_nan)
     seg = get_segmentation(...
         this, vol_start, vol_sz, seg_fn, seg_name);
+    set_segmentation(this, vol_offset, ...
+                           seg_fn, seg_name, ...
+                           chunk_sz, do_permute)
 
   end
 
