@@ -62,6 +62,18 @@ classdef dvid_connection
       end
     end
 
+    function commit(this, note)
+      dvid_cmd = sprintf(...
+          ['curl -s -f -X POST %s/api/node/%s/commit ' ...
+           '-d ''{"note": "%s"}'''], ...
+          this.machine_name, this.repo_name, note);
+      st = system(dvid_cmd);
+
+      if(st ~= 0)
+        error('error connecting to dvid: %s', dvid_cmd);
+      end
+    end
+
     function create_instance(this, typename, dataname)
       assert(ismember(typename, ...
                       {'annotation', 'labelblk', 'labelvol'}), ...
