@@ -35,8 +35,10 @@ opts.is_autoencoder      = false;
 opts.data_aug            = false;
 opts.aux_classes         = [];
 opts.fraction_to_corrupt = [];
+opts.zero_mask           = [];
 opts.corrupt_type        = [];
 opts.patch_sz            = [];
+opts.label_sz            = [];
 
 [opts, varargin]         = vl_argparse(opts, varargin) ;
 opts.train.learningRate  = opts.learningRate;
@@ -63,6 +65,7 @@ imdb.ratios         = opts.ratios;
 imdb.classes        = opts.classes;
 imdb.data_aug       = opts.data_aug;
 imdb.corrupt        = opts.fraction_to_corrupt;
+imdb.zero_mask      = opts.zero_mask;
 imdb.corrupt_type   = -1;
 if(imdb.corrupt > 0)
   switch(opts.corrupt_type)
@@ -87,6 +90,7 @@ imdb.ext_upper = ceil(  (imdb.patch_sz-1) / 2);
 
 if(imdb.is_autoencoder == 2)
   imdb.patch_sz = opts.patch_sz;
+  imdb.label_sz = opts.label_sz;
 end
 
 if(size(prefixes,2)==3)

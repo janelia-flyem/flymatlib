@@ -8,6 +8,7 @@ function [data, labels] = ae2d_get_batch(imdb, batch)
   n_examples   = length(batch);
 
   patch_sz     = imdb.patch_sz;
+  label_sz     = imdb.label_sz;
   corrupt_type = imdb.corrupt_type;
 
   if(corrupt_type == 0)
@@ -24,8 +25,13 @@ function [data, labels] = ae2d_get_batch(imdb, batch)
 
   data   = zeros(patch_sz,patch_sz,1,...
                  n_examples, 'single');
-  labels = zeros(patch_sz,patch_sz,1,...
-                 n_examples, 'single');
+  if(isempty(label_sz))
+    labels = zeros(patch_sz,patch_sz,1,...
+                   n_examples, 'single');
+  else
+    labels = zeros(label_sz(1),label_sz(2),1,...
+                   n_examples, 'single');
+  end
 
   if(imdb.data_aug)
     aug_rot = floor(4*rand(n_examples,1));
@@ -51,7 +57,13 @@ function [data, labels] = ae2d_get_batch(imdb, batch)
       end
     end
 
-    labels(:,:,1,jj) = data_tmp;
+    if(isempty(label_sz))
+      labels(:,:,1,jj) = data_tmp;
+    else
+      labels(:,:,1,jj) = reshape(data_tmp(imdb.zero_mask), ...
+                                 label_sz(1),label_sz(2));
+    end
+
     if(corrupt_type == 0)
       rr = randsample(patch_sz^2, num_corrupt);
       data_tmp(rr) = 0;
@@ -59,6 +71,10 @@ function [data, labels] = ae2d_get_batch(imdb, batch)
     if(corrupt_type == 1)
       data_tmp = data_tmp + ...
           sgm_corrupt * randn(patch_sz,patch_sz);
+    end
+
+    if(~isempty(imdb.zero_mask))
+      data_tmp(imdb.zero_mask) = 0;
     end
     data(:,:,1,jj) = data_tmp;
   end
