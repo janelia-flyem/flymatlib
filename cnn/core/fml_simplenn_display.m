@@ -93,12 +93,12 @@ for l = 1:numel(net.layers)
       info.support(1:2,l) = [1;1] ;
   end
   if isfield(ly, 'stride')
-    info.stride(1:2,l) = ly.stride(:) ;
+    info.stride(1:2,l) = ly.stride(1:min(length(ly.stride),2)) ;
   else
     info.stride(1:2,l) = 1 ;
   end
   if isfield(ly, 'pad')
-    info.pad(1:4,l) = ly.pad(:) ;
+    info.pad(1:4,l) = ly.pad(1:min(length(ly.pad),4)) ;
   else
     info.pad(1:4,l) = 0 ;
   end

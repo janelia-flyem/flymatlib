@@ -88,9 +88,10 @@ imdb.patch_sz  = net_info.receptiveFieldSize(1,end);
 imdb.ext_lower = floor( (imdb.patch_sz-1) / 2);
 imdb.ext_upper = ceil(  (imdb.patch_sz-1) / 2);
 
-if(imdb.is_autoencoder == 2)
+if(imdb.is_autoencoder)
   imdb.patch_sz = opts.patch_sz;
   imdb.label_sz = opts.label_sz;
+  imdb.is3d     = ~(imdb.is_autoencoder == 2);
 end
 
 if(size(prefixes,2)==3)
@@ -123,7 +124,7 @@ for ii=1:size(prefixes,1)
     mm(:,:,[1:imdb.ext_lower,end-imdb.ext_upper+1:end]) = 0;
   end
 
-  if(imdb.is_autoencoder ~= 2)
+  if(~imdb.is_autoencoder)
     for cc = 1:length(imdb.classes)
       % ll encodes neg/pos labels as 0/1
       cc_val = imdb.classes(cc);
@@ -162,8 +163,8 @@ end
 %                                                                Train
 % --------------------------------------------------------------------
 
-if(imdb.is_autoencoder == 2)
-  get_batch_func = @ae2d_get_batch;
+if(imdb.is_autoencoder)
+  get_batch_func = @ae_get_batch;
 else
   get_batch_func = @tbar_cnn_get_batch;
 end

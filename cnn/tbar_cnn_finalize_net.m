@@ -9,14 +9,15 @@ function net = tbar_cnn_finalize_net(net, remove_center_out)
      isempty(remove_center_out))
     remove_center_out = false;
   end
-  
+
 % fix last layer
   if(strcmp(net.layers{end}.type, 'sigentloss'))
     % replace loss layer with sigmoid
     net.layers(end) = [];
     net.layers{end+1} = struct('type','sigmoid');
   end
-  if(strcmp(net.layers{end}.type, 'squaredloss'))
+  if(strcmp(net.layers{end}.type, 'squaredloss') || ...
+     strcmp(net.layers{end}.type, 'l1loss'))
     net.layers(end) = [];
   end
   if(strcmp(net.layers{end}.type, 'objloss'))
