@@ -1,4 +1,4 @@
-function Y = fml_nnl1loss(X,c,dzdy)
+function Y = fml_nnl1loss(X,c,l_eps,w,dzdy)
 % FML_NNL1LOSS CNN L1 loss
 %   normalize by output size (ignores batch_size)
 % Y = FML_NNL1LOSS(X,c,dzdy)
@@ -11,10 +11,12 @@ function Y = fml_nnl1loss(X,c,dzdy)
     s_vl = prod(s_sz(1:end-1));
   end
 
-  if(nargin <= 2)
-    t = abs(c - X);
+  if(nargin <= 4)
+    t = max(0, X-c) + max(0, c-X-l_eps);
+    t = t .* (1+w*max(0,0-c));
     Y = sum(t(:)) / s_vl;
   else
-    Y = ( (X>c) - (X<c) ) .* dzdy / s_vl;
+    Y = ( (X>c) - (X<(c-l_eps)) ) .* ...
+        (1+w*max(0,0-c)) .* dzdy / s_vl;
   end
 end
