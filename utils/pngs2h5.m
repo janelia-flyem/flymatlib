@@ -38,8 +38,8 @@ function [h5out_mean, h5out_std, empty_vol, ...
   end
 
   h5out_kl_divergence = [];
-  
-  img_dir = [base_dir '/grayscale_maps'];
+
+  img_dir = [base_dir];% '/grayscale_maps'];
 
   if(num_z < 0)
     img_fns = dir(sprintf('%s/%s.*.png', img_dir, img_prefix));
@@ -63,7 +63,7 @@ function [h5out_mean, h5out_std, empty_vol, ...
   end
 
   h5out = zeros(h,w,num_z, 'double');
-  
+
   for ii=1:num_z
     if(isempty(img_fns))
       img_fn = sprintf('%s/%s.%05d.png', ...
@@ -71,17 +71,17 @@ function [h5out_mean, h5out_std, empty_vol, ...
     else
       img_fn = sprintf('%s/%s', img_dir, img_fns(ii).name);
     end
-    
+
     img    = double(imread(img_fn));
-    
+
     if(do_convert_coords)
       % convert coordinates
       img    = flipud(rot90(img));
     end
-    
+
     h5out(:,:,ii) = img;
   end
-  
+
   if(exist('bg_vals_to_nan','var') && ...
      ~isempty(bg_vals_to_nan))
     for bg_val = bg_vals_to_nan(:)'
@@ -103,7 +103,7 @@ function [h5out_mean, h5out_std, empty_vol, ...
     p_hist = [];
     h5out_kl_divergence = [];
   end
-  
+
   if(~isequal(do_normalize, 0))
     if(do_normalize==1) % self normalize
       h5out_mean = mean(h5out(~isnan(h5out)));
@@ -113,7 +113,7 @@ function [h5out_mean, h5out_std, empty_vol, ...
         length(do_normalize)==2, ...
         'DAWMRLIB:AssertionFailed', ...
         'do_normalize should either be true or [mn std] to use');
-      
+
       h5out_mean = do_normalize(1);
       h5out_std  = do_normalize(2);
     end
@@ -124,7 +124,7 @@ function [h5out_mean, h5out_std, empty_vol, ...
     h5out_mean = [];
     h5out_std  = [];
   end
-  
+
   h5out = single(h5out);
 
   if(~isempty(fn))
@@ -138,5 +138,5 @@ function [h5out_mean, h5out_std, empty_vol, ...
              'Deflate', 4, ...
              'Shuffle', 1);
     h5write(fn, '/main', h5out);
-  end  
+  end
 end
