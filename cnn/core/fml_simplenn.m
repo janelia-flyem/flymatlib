@@ -350,7 +350,8 @@ for i=1:n
     case 'squaredloss' % FML addition
       res(i+1).x = fml_nnsquaredloss(res(i).x, l.class) ;
     case 'l1loss' % FML addition
-      res(i+1).x = fml_nnl1loss(res(i).x, l.class) ;
+      res(i+1).x = fml_nnl1loss(res(i).x, l.class, ...
+                                l.l_eps, l.wght) ;
     case 'objloss' % FML addition
       res(i+1).x = fml_nncombobjloss(res(i).x, l.class, ...
                                      l.target, l.robj, l.rnorm);
@@ -507,6 +508,7 @@ if doder
                                         res(i+1).dzdx);
       case 'l1loss' % FML addition
         res(i).dzdx = fml_nnl1loss(res(i).x, l.class, ...
+                                   l.l_eps, l.wght, ...
                                    res(i+1).dzdx);
       case 'objloss' % FML addition
         res(i).dzdx = fml_nncombobjloss(res(i).x, l.class, ...

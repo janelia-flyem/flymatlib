@@ -235,7 +235,25 @@ function net = tbar_cnn_init(model_str, is3d)
         net.layers{end+1} = struct('type', 'squaredloss') ;
 
       case 'l'
-        net.layers{end+1} = struct('type', 'l1loss') ;
+        l_eps  = 0;
+        l_wght = 0;
+        if(length(mm{ii})>1)
+          cc = strsplit(mm{ii}(2:end),'x');
+          assert(length(cc)==1 || length(cc)==2, ...
+                 'FML:AssertionFailed', ...
+                 'misspecified l1loss layer');
+          l_eps = str2double(cc{1});
+          if(length(cc)>1)
+            l_wght = str2double(cc{2});
+          end
+          assert(~isnan(l_eps) && ~isnan(l_wght), ...
+                 'FML:AssertionFailed', ...
+                 'misspecified l1loss layer');
+        else
+        end
+        net.layers{end+1} = struct('type', 'l1loss', ...
+                                   'l_eps', l_eps,   ...
+                                   'wght',  l_wght) ;
 
 
       otherwise
