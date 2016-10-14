@@ -62,8 +62,13 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
          'FML:AssertionFailed', ...
          'must specify vol_sz if using flip_y');
 
-  locs_groundtruth = tbar_json2locs(fn_groundtruth, offset_gt, ...
-				    true);
+  if(ischar(fn_groundtruth))
+    locs_groundtruth = tbar_json2locs(fn_groundtruth, offset_gt, ...
+                                      true);
+  else
+    locs_groundtruth = fn_groundtruth;
+  end
+
   if(require_full_conf)
     conf_idx = locs_groundtruth(4,:) > 0.99;
     locs_groundtruth = locs_groundtruth(1:3, conf_idx);
@@ -90,8 +95,12 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
   num_tp_cont = zeros(n_thds,1);
   tp_scores   = cell(n_thds,1);
 
-  locs_predict_orig  = tbar_json2locs(fn_predict, offset_pd, ...
-                                      true);
+  if(ischar(fn_predict))
+    locs_predict_orig = tbar_json2locs(fn_predict, offset_pd, ...
+                                       true);
+  else
+    locs_predict_orig = fn_predict;
+  end
   if(~isempty(remove_buffer_radius))
     locs_predict_orig = tbar_remove_border(...
       locs_predict_orig, vol_sz, remove_buffer_radius);
@@ -114,7 +123,16 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
     end
 
     % avoid issue when there is only a single or no predictions
-    if(sum(valid_tbars) < 2)
+    if(size(locs_groundtruth,2)==0)
+      % avoid issue where no ground-truth tbars
+      pps(ii)         = 0;
+      rrs(ii)         = 0;
+      num_tp(ii)      = 0;
+      tot_pred(ii)    = sum(valid_tbars);
+      tot_gt(ii)      = 0;
+      num_tp_cont(ii) = 0;
+      tp_scores{ii}   = [];
+    elseif(sum(valid_tbars) < 2)
       pps(ii)         = 0;
       rrs(ii)         = 0;
       num_tp(ii)      = 0;
