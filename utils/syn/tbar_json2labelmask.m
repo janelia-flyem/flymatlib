@@ -21,7 +21,7 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
 % radius_ign       ignore region radius, neither pos or neg labels
 % add_center_out   output layers for object center prediction
 
-    
+
   if(~exist('z_offset','var'))
     z_offset = [];
   end
@@ -31,31 +31,35 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
   if(~exist('add_center_out','var') || isempty(add_center_out))
     add_center_out = false;
   end
-  
+
   radius_max = max([radius_use, radius_ign]);
 
   %% set labels
-  
+
   if(~add_center_out)
     labels = zeros(vol_sz + 2*radius_max);
   else
     labels = zeros([vol_sz + 2*radius_max, 4]);
   end
-  
+
   % set labels, using radius of cube
-  locs   = tbar_json2locs(fn_json, z_offset);
-  % switch coordinate ordering by
-  %   swapping x and y, and re-orienting both
-  locs      = locs([2 1 3], :);
-  locs(1,:) = vol_sz(1) - locs(1,:) - 1;
+  if(ischar(fn_json)) % read from file
+    locs = tbar_json2locs(fn_json, z_offset);
+    % switch coordinate ordering by
+    %   swapping x and y, and re-orienting both
+    locs      = locs([2 1 3], :);
+    locs(1,:) = vol_sz(1) - locs(1,:) - 1;
+  else % passed in and already in local matlab 0-based coordinates
+    locs = fn_json;
+  end
   % account for padding and 0-based indexing
   locs      = locs + 1 + radius_max;
 
   [flt, flt_dist] = fml_set_filter(radius_use);
-  
+
   for ii=1:size(locs,2)
     cx = locs(1,ii); cy = locs(2,ii); cz = locs(3,ii);
-    
+
     labels(cx-radius_use:cx+radius_use, ...
            cy-radius_use:cy+radius_use, ...
            cz-radius_use:cz+radius_use,1) = ...
@@ -63,23 +67,23 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
              cy-radius_use:cy+radius_use, ...
              cz-radius_use:cz+radius_use,1) | flt;
   end
-  
+
   if(add_center_out)
     % output prediction for closest tbar
     label_sz   = size(labels);
     label_dist = Inf*ones(label_sz(1:3));
     local_sz   = (2*radius_use+1)*ones(1,3);
-    
+
     for ii=1:size(locs,2)
       cx = locs(1,ii); cy = locs(2,ii); cz = locs(3,ii);
-    
+
       curr_dist = label_dist(cx-radius_use:cx+radius_use, ...
                              cy-radius_use:cy+radius_use, ...
                              cz-radius_use:cz+radius_use);
 
       use_mask  = (flt_dist < curr_dist);
       new_dist  = min(flt_dist, curr_dist);
-        
+
       label_dist(cx-radius_use:cx+radius_use, ...
                  cy-radius_use:cy+radius_use, ...
                  cz-radius_use:cz+radius_use) = new_dist;
@@ -101,11 +105,11 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
                    cz-radius_use:cz+radius_use,1+cc) .* ...
             ~use_mask + local_center .* use_mask;
       end
-      
+
     end
   end
-  
-  
+
+
   labels = labels(radius_max+1:end-radius_max, ...
                   radius_max+1:end-radius_max, ...
                   radius_max+1:end-radius_max, :);
@@ -117,19 +121,19 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
     labels(:,:,:,1) = double(labels(:,:,:,1) & ...
                              (im <= image_thresh));
   end
-    
-  
+
+
   %% set mask
-  
+
   mask   = ones(vol_sz + 2*radius_max);
-  
+
   % set ignore region if requested
   if(radius_ign > 0)
     flt_ign = 1-fml_set_filter(radius_ign);
-    
+
     for ii=1:size(locs,2)
     cx = locs(1,ii); cy = locs(2,ii); cz = locs(3,ii);
-    
+
     mask(cx-radius_ign:cx+radius_ign, ...
          cy-radius_ign:cy+radius_ign, ...
          cz-radius_ign:cz+radius_ign) = ...
@@ -138,7 +142,7 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
            cz-radius_ign:cz+radius_ign) & flt_ign;
     end
   end
-  
+
   mask = mask(radius_max+1:end-radius_max, ...
               radius_max+1:end-radius_max, ...
               radius_max+1:end-radius_max);
@@ -147,7 +151,7 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
     % don't ignore any positive labels
     mask = double(mask | labels(:,:,:,1));
   end
-  
+
   % account for border
   mask(1:border,:,:) = 0;
   mask(:,1:border,:) = 0;
@@ -155,13 +159,13 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
   mask(end-border+1:end,:,:) = 0;
   mask(:,end-border+1:end,:) = 0;
   mask(:,:,end-border+1:end) = 0;
-  
+
   labels = int8(labels);
   mask   = int8(mask);
-  
+
   fn_labels = sprintf('%slabels.h5', fn_out_prefix);
   fn_mask   = sprintf('%smask.h5',   fn_out_prefix);
-  
+
   if(exist(fn_labels, 'file'))
     delete(fn_labels);
   end
@@ -183,7 +187,7 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
            'ChunkSize', [50 50 50], ...
            'Deflate', 4, ...
            'Shuffle', 1);
-  
+
   h5write(fn_labels, '/main', labels);
   h5write(fn_mask,   '/main', mask);
 
