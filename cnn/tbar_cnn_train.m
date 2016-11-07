@@ -39,6 +39,7 @@ opts.zero_mask           = [];
 opts.corrupt_type        = [];
 opts.patch_sz            = [];
 opts.label_sz            = [];
+opts.use_all_data        = false;
 
 [opts, varargin]         = vl_argparse(opts, varargin) ;
 opts.train.learningRate  = opts.learningRate;
@@ -62,8 +63,12 @@ prefixes            = opts.imdbPath;
 imdb.is_autoencoder = opts.is_autoencoder;
 imdb.nums           = opts.nums;
 imdb.ratios         = opts.ratios;
+if(size(imdb.ratios,1) == 1)
+  imdb.ratios = repmat(imdb.ratios, size(prefixes,1), 1);
+end
 imdb.classes        = opts.classes;
 imdb.data_aug       = opts.data_aug;
+imdb.use_all_data   = opts.use_all_data;
 imdb.corrupt        = opts.fraction_to_corrupt;
 imdb.zero_mask      = opts.zero_mask;
 imdb.corrupt_type   = -1;

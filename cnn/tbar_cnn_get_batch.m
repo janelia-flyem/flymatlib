@@ -6,6 +6,9 @@ function [data, labels] = tbar_cnn_get_batch(imdb, batch)
 
 n_substacks = length(imdb.data);
 iiss = 1:(n_substacks-1); % training
+if(imdb.use_all_data)
+  iiss = 1:n_substacks;
+end
 if(min(batch) > imdb.nums(1))
   iiss = n_substacks; % validation
 end
@@ -38,16 +41,17 @@ assert(n_examples == round(n_examples), ...
        ['number of training substacks should ' ...
         'evenly divide batch size']);
 
-num_tot  = 0;
 n_ratios      = length(imdb.classes);
-num_per_class = zeros(1,n_ratios);
-for cc = 1:n_ratios-1
-  num_per_class(cc) = floor(n_examples * imdb.ratios(cc));
-  num_tot = num_tot + num_per_class(cc);
-end
-num_per_class(n_ratios) = n_examples - num_tot;
 
 for ii=iiss
+  num_tot  = 0;
+  num_per_class = zeros(1,n_ratios);
+  for cc = 1:n_ratios-1
+    num_per_class(cc) = floor(n_examples * imdb.ratios(ii,cc));
+    num_tot = num_tot + num_per_class(cc);
+  end
+  num_per_class(n_ratios) = n_examples - num_tot;
+
   for cc = 1:n_ratios
     pts = randsample(imdb.pts{ii, cc}, num_per_class(cc), true);
     %length(pts)<num_per_class(cc+1));
