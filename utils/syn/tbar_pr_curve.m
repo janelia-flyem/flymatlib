@@ -132,7 +132,7 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
       tot_gt(ii)      = 0;
       num_tp_cont(ii) = 0;
       tp_scores{ii}   = [];
-    elseif(sum(valid_tbars) < 2)
+    elseif(sum(valid_tbars) < 1)
       pps(ii)         = 0;
       rrs(ii)         = 0;
       num_tp(ii)      = 0;
