@@ -53,6 +53,7 @@ for ii=iiss
   num_per_class(n_ratios) = n_examples - num_tot;
 
   for cc = 1:n_ratios
+    if(num_per_class(cc)==0), continue, end
     pts = randsample(imdb.pts{ii, cc}, num_per_class(cc), true);
     %length(pts)<num_per_class(cc+1));
 

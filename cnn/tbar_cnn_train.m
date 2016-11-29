@@ -112,7 +112,11 @@ for ii=1:size(prefixes,1)
   mask_fn   = sprintf('%smask.h5',   prefixes{ii,2});
   if(has_aux)
     aux_fn = prefixes{ii,3};
-    aa     = single(read_image_stack(aux_fn));
+    if(~isempty(aux_fn))
+      aa   = single(read_image_stack(aux_fn));
+    else
+      aa = [];
+    end
   end
 
   imdb.data{ii} = read_image_stack(data_fn);
@@ -134,7 +138,12 @@ for ii=1:size(prefixes,1)
       % ll encodes neg/pos labels as 0/1
       cc_val = imdb.classes(cc);
 
-      if(~has_aux || isnan(aux_classes(cc)) )
+      if(imdb.ratios(ii,cc) == 0)
+        imdb.pts{ii,cc} = [];
+        continue
+      end
+
+      if(~has_aux || isnan(aux_classes(cc)) || isempty(aa))
         if(isnan(cc_val)) % no constraint
           imdb.pts{ii,cc} = find( mm>0 );
         else % is valid neg/pos label
