@@ -24,5 +24,6 @@ function fml_setup()
   addpath(fullfile(fmlpath, 'utils',       'syn'        ));
   addpath(fullfile(fmlpath, 'third_party'               ));
   addpath(fullfile(fmlpath, 'third_party', 'export_fig' ));
+  addpath(fullfile(fmlpath, 'third_party', 'convnfft'   ));
   addpath(fullfile(fmlpath, 'examples'                  ));
 end
