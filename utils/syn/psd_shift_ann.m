@@ -39,11 +39,8 @@ function pp = psd_shift_ann(tt, pp, dvid_conn, seg_name, ...
     pp_loc = bsxfun(@minus, pp{ii}(1:3,:), vol_start) + 1;
 
     % get local segmentation
-    seg_fn = sprintf('tmp_pb_psd_%d_%s.h5', ii, datestr(now,30));
-    dvid_conn.get_segmentation(...
-        vol_start', window_sz, seg_fn, seg_name);
-    ss = read_image_stack(seg_fn);
-    delete(seg_fn);
+    ss = dvid_conn.get_segmentation(...
+        vol_start', window_sz, [], seg_name);
 
     n_psd = size(pp_loc,2);
     seg_valid_ind = cell(1, n_psd);
