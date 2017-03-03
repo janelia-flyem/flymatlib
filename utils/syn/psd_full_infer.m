@@ -48,7 +48,7 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
 
   parfor ii=1:n_substacks
     % skip over any previously processed substacks
-    fn_mat = sprintf('%s/%06d_syn.mat', work_dir, ii);
+    fn_mat = sprintf('%s/%06d_synsh.mat', work_dir, ii);
     if(exist(fn_mat,'file')), continue, end
 
     % adding in buffer large enough to do PSD features
@@ -82,6 +82,14 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
       done_st  = sprintf('%s/status/%06d.done',  work_dir, ii);
       system(sprintf('touch %s', ready_st));
       while(~exist(done_st, 'file')), pause(10), end
+
+      fn_mat_orig = sprintf('%s/%06d_syn.mat', work_dir, ii);
+      ss = load(fn_mat_orig, 'tlocs', 'plocs');
+      tlocs = ss.tlocs;
+      plocs = psd_shift_ann(tlocs, ss.plocs, dvid_conn, seg_name);
+      plocs = psd_make_global_unique(plocs,  dvid_conn, seg_name);
+      save_out(fn_mat, tlocs, plocs);
+      system(sprintf('rm %s', fn_mat_orig));
     end
 
     system(sprintf('rm %s %s', seg_fn, image_fn));
@@ -89,7 +97,7 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
 
   % merge all tlocs, plocs, save in .mat
   for ii=1:n_substacks
-    fn_mat = sprintf('%s/%06d_syn.mat', work_dir, ii);
+    fn_mat = sprintf('%s/%06d_synsh.mat', work_dir, ii);
     ss = load(fn_mat, 'tlocs', 'plocs');
     tlocs_all{ii} = ss.tlocs;
     plocs_all{ii} = ss.plocs;
@@ -102,4 +110,8 @@ end
 
 function save_vars(vars_fn, vol_start_outer, vol_sz_outer, tbars_local)
   save(vars_fn, 'vol_start_outer', 'vol_sz_outer', 'tbars_local');
+end
+
+function save_out(fn, tlocs, plocs)
+  save(fn, 'tlocs', 'plocs');
 end
