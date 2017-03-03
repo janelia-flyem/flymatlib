@@ -6,11 +6,32 @@ function pp = psd_make_global_unique(pp, dvid_conn, seg_name)
   xx = xx(:); yy = yy(:); zz = zz(:);
   n_of = length(xx);
 
+  ppi = pp;
+  for ii=1:length(ppi)
+    if(isempty(pp{ii}))
+      pp{ ii} = zeros(4,0);
+      ppi{ii} = pp{ii};
+    end
+    ppi{ii}(5,:) = ii;
+  end
+  pa = cell2mat(ppi);
+  [~,unq_idx]      = unique(pa(1:3,:)','rows');
+  dup_idx          = true(1,size(pa,2));
+  dup_idx(unq_idx) = false;
+  dup_syn          = pa(5,dup_idx);
+  n_dups_tot       = length(dup_syn);
+
+  syn_dups_idx = unique(dup_syn);
+  syn_dups     = false(1,length(ppi));
+  syn_dups(syn_dups_idx) = true;
+  syn_unqs_idx = find(~syn_dups);
   n_dups = 0;
-  for ii=2:length(pp)
+  for dd=1:length(syn_dups_idx)
+    ii = syn_dups_idx(dd);
     if(isempty(pp{ii})), continue, end
 
-    locs_prev = cell2mat(pp(1:ii-1));
+    locs_prev = cell2mat(pp(...
+        [syn_unqs_idx, syn_dups_idx(1:(dd-1))]));
     locs_prev = locs_prev(1:3,:)';
 
     dup_vec = ismember(pp{ii}(1:3,:)',locs_prev,'rows');
@@ -20,7 +41,9 @@ function pp = psd_make_global_unique(pp, dvid_conn, seg_name)
     idx = 1:size(pp{ii},2);
     for jj=idx(dup_vec)
       % pull down 5^3 window centered as psd
-      seg_fn = sprintf('tmp_pb_psd_%s.h5', datestr(now,30));
+      seg_fn = sprintf(...
+          'tmp_pb_psd_%d-%d-%d-%s.h5', ...
+          pp{ii}(1:3,jj)', datestr(now,30));
       dvid_conn.get_segmentation(...
           pp{ii}(1:3,jj)' - vol_of, vol_sz, seg_fn, seg_name);
       ss = read_image_stack(seg_fn);
@@ -48,5 +71,6 @@ function pp = psd_make_global_unique(pp, dvid_conn, seg_name)
       if(~got_match), keyboard, end
     end
   end
-  n_dups
+  assert(n_dups == n_dups_tot,'FML:AssertionFailed',...
+         'unexpected number of duplicates');
 end
