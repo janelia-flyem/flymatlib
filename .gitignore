@@ -9,3 +9,4 @@ fml_dist/run_fml_dist_single.sh
 examples/ex_cube?_labels.h5
 examples/ex_cube?_mask.h5
 examples/fml_example/*
+third_party/lz4
