@@ -88,7 +88,12 @@ function [tt,pp] = get_annotations(this, vol_start, vol_sz, ...
 
     idx = idx + 1;
     tt(1:3,idx) = tt_pos;
-    tt(4,  idx) = str2double(dd{ii}.Prop.conf);
+    if(isfield(dd{ii}.Prop,'conf'))
+      tt(4,  idx) = str2double(dd{ii}.Prop.conf);
+    else
+      warning('FML:Warning', 'no confidence value, setting to 1');
+      tt(4,  idx) = 1;
+    end
     n_psd( idx) = length(dd{ii}.Rels);
 
     if(return_psd)
@@ -127,7 +132,12 @@ function [tt,pp] = get_annotations(this, vol_start, vol_sz, ...
     jj     = size(pp{idx},2) + 1;
 
     pp{idx}(1:3,jj) = cell2mat(dd{ii}.Pos);
-    pp{idx}(4,  jj) = str2double(dd{ii}.Prop.conf);
+    if(isfield(dd{ii}.Prop, 'conf'))
+      pp{idx}(4,  jj) = str2double(dd{ii}.Prop.conf);
+    else
+      warning('FML:Warning', 'no confidence value, setting to 1');
+      pp{idx}(4,  jj) = 1;
+    end
   end
 
   for ii=1:n_tt
