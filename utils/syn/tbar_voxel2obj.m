@@ -149,6 +149,8 @@ function tbars = tbar_voxel2obj(...
     cc_ctrs(2,:)   = vol_tot_2 - cc_ctrs(2,:) - 1;
   end
 
-  tbar_json_write(jsonoutputfile, cc_ctrs);
+  if(~isempty(jsonoutputfile))
+    tbar_json_write(jsonoutputfile, cc_ctrs);
+  end
   tbars = cc_ctrs;
 end

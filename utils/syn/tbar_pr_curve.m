@@ -137,7 +137,7 @@ function [pps, rrs, num_tp, tot_pred, tot_gt, ...
       rrs(ii)         = 0;
       num_tp(ii)      = 0;
       tot_pred(ii)    = 0;
-      tot_gt(ii)      = tot_gt(ii-1);
+      tot_gt(ii)      = size(locs_groundtruth,2);
       num_tp_cont(ii) = 0;
       tp_scores{ii}   = [];
     else

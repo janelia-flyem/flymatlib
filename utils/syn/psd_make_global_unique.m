@@ -1,5 +1,7 @@
 function pp = psd_make_global_unique(pp, dvid_conn, seg_name)
 
+  if(isempty(pp)), return, end
+
   vol_of     = [3 3 3];
   vol_sz     = 2*vol_of - 1;
   [xx,yy,zz] = ndgrid(1:vol_sz(1),1:vol_sz(2),1:vol_sz(3));
@@ -71,6 +73,9 @@ function pp = psd_make_global_unique(pp, dvid_conn, seg_name)
       if(~got_match), keyboard, end
     end
   end
-  assert(n_dups == n_dups_tot,'FML:AssertionFailed',...
+  if(n_dups ~= n_dups_tot),
+    disp([n_dups n_dups_tot]);
+  end
+  assert(n_dups >= n_dups_tot,'FML:AssertionFailed',...
          'unexpected number of duplicates');
 end
