@@ -15,12 +15,12 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
   if(~exist('get_body','var') || isempty(get_body))
     get_body = false;
   end
-  
+
   ss = fileread(fn);
   dd = parse_json(ss);
-  
+
   nn = length(dd.data);
-  
+
   if(get_body)
     locs = zeros(5, nn);
   else
@@ -30,17 +30,21 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
       locs = zeros(3, nn);
     end
   end
-  
+
   for ii=1:nn
     locs(1:3,ii) = cell2mat(dd.data{ii}.T_bar.location);
     if(get_conf)
-      locs(4,  ii) = dd.data{ii}.T_bar.confidence;
+      cc = dd.data{ii}.T_bar.confidence;
+      if(ischar(cc))
+        cc = str2double(cc);
+      end
+      locs(4,  ii) = cc;
     end
     if(get_body)
       locs(5,  ii) = dd.data{ii}.T_bar.body_ID;
     end
   end
-  
+
   if(exist('offset','var') && ~isempty(offset))
     if(isscalar(offset))
       locs(3,:)   = locs(3,:) - offset;
@@ -48,12 +52,16 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
       locs(1:3,:) = bsxfun(@minus, locs(1:3,:), offset');
     end
   end
-  
+
   if(nargout == 2) % also output PSDs
     psd_locs = cell(1,nn);
-    
+
     for ii=1:nn
-      mm = length(dd.data{ii}.partners);
+      if(isfield(dd.data{ii},'partners'))
+        mm = length(dd.data{ii}.partners);
+      else
+        mm = 0;
+      end
       if(get_body)
         psd_locs{ii} = zeros(5, mm);
       else
@@ -63,7 +71,7 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
           psd_locs{ii} = zeros(3, mm);
         end
       end
-      
+
       for jj=1:mm
         psd_locs{ii}(1:3,jj) = ...
             cell2mat(dd.data{ii}.partners{jj}.location);
@@ -77,7 +85,7 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
         end
       end
     end
-    
+
     if(exist('offset','var') && ~isempty(offset))
       if(isscalar(offset))
         for ii=1:nn
@@ -90,6 +98,6 @@ function [locs, psd_locs] = tbar_json2locs(fn, offset, get_conf, ...
         end
       end
     end
-    
+
   end % end get PSDs
 end
