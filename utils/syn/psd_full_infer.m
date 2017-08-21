@@ -61,9 +61,13 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
         vol_start_outer, vol_sz_outer, seg_fn, seg_name);
     % get image
     image_fn = sprintf('%s/%06d_image.h5', work_dir, ii);
-    [~,~,empty_vol] = dvid_conn.get_image(...
-        vol_start_outer, vol_sz_outer, image_fn, ...
-        psdm.do_normalize, bg_vals);
+    if(~isempty(psdm.image_thresh))
+      [~,~,empty_vol] = dvid_conn.get_image(...
+          vol_start_outer, vol_sz_outer, image_fn, ...
+          psdm.do_normalize, bg_vals);
+    else
+      empty_vol = false;
+    end
 
     if(~empty_vol)
       % convert tbars to local Raveler coordinates
@@ -92,7 +96,10 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
       system(sprintf('rm %s', fn_mat_orig));
     end
 
-    system(sprintf('rm %s %s', seg_fn, image_fn));
+    system(sprintf('rm %s', seg_fn));
+    if(~isempty(psdm.image_thresh))
+      system(sprintf('rm %s', image_fn));
+    end
   end
 
   % merge all tlocs, plocs, save in .mat
