@@ -1,6 +1,7 @@
 function [im_mean, im_std, empty_vol] = get_image(...
     this, vol_start, vol_sz, image_fn, ...
-    do_normalize, bg_vals_to_nan, roi_mask, grayscale_name)
+    do_normalize, bg_vals_to_nan, roi_mask, grayscale_name, ...
+    do_permute)
 
   if(~exist('grayscale_name','var') || isempty(grayscale_name))
     grayscale_name = 'grayscale';
@@ -11,6 +12,9 @@ function [im_mean, im_std, empty_vol] = get_image(...
   roi_str = '';
   if(exist('roi_mask','var') && ~isempty(roi_mask))
     roi_str = sprintf('&roi=%s', roi_mask);
+  end
+  if(~exist('do_permute','var'))
+    do_permute = true; % to matlab ordering
   end
 
   dvid_cmd  = ...
@@ -34,8 +38,11 @@ function [im_mean, im_std, empty_vol] = get_image(...
   delete(image_fn);
 
   % reshape and switch from DVID to Matlab indexing order
+  %   not for flypylib
   im = reshape(im, vol_sz);
-  im = permute(im, [2 1 3]);
+  if(do_permute)
+    im = permute(im, [2 1 3]);
+  end
 
   if(exist('bg_vals_to_nan','var') && ...
      ~isempty(bg_vals_to_nan))

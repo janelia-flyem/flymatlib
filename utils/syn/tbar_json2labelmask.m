@@ -47,8 +47,10 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
     locs = tbar_json2locs(fn_json, z_offset);
     % switch coordinate ordering by
     %   swapping x and y, and re-orienting both
-    locs      = locs([2 1 3], :);
-    locs(1,:) = vol_sz(1) - locs(1,:) - 1;
+
+    % skip for python use, json already for python
+    %locs      = locs([2 1 3], :);
+    %locs(1,:) = vol_sz(1) - locs(1,:) - 1;
   else % passed in and already in local matlab 0-based coordinates
     locs = fn_json;
   end
@@ -119,7 +121,7 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
      ~isempty(image_thresh))
     im     = read_image_stack(fn_image);
     labels(:,:,:,1) = double(labels(:,:,:,1) & ...
-                             (im <= image_thresh));
+                             (im <= image_thresh(1)));
   end
 
 
@@ -150,6 +152,11 @@ function tbar_json2labelmask(fn_json, fn_out_prefix, ...
   if(radius_ign > 0)
     % don't ignore any positive labels
     mask = double(mask | labels(:,:,:,1));
+
+    if(exist('image_thresh','var') && length(image_thresh)>1)
+      % don't ignore any easy negatives
+      mask = double(mask | (im >= image_thresh(2)));
+    end
   end
 
   % account for border
