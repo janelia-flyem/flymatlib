@@ -3,7 +3,8 @@ function psd_full_infer_worker(psd_model_fn, work_dir, num_cubes)
   psdm = load(psd_model_fn);
 
   if(isempty(gcp('nocreate')))
-    parpool('local',31);
+    tmp_cl = parcluster('local');
+    parpool('local',tmp_cl.NumWorkers);
   end
 
   while(true)
