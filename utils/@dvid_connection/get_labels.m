@@ -41,30 +41,38 @@ function [ll_t, ll_p] = get_labels(this, seg_name, tt_pts, pp_pts)
   end
 
   n_pts = size(all_pts,2);
-  fid   = fopen(tmp_out, 'w');
-  fprintf(fid, '[');
-  for ii=1:n_pts
-    fprintf(fid, '[%d,%d,%d]',all_pts(1:3,ii));
-    if(ii~=n_pts), fprintf(fid,','); end
+
+  num_at_once = 10000;
+
+  for jj=1:num_at_once:n_pts
+    fprintf('.');
+    fid   = fopen(tmp_out, 'w');
+    fprintf(fid, '[');
+    jj_upper = min(jj+num_at_once-1, n_pts);
+    for ii=jj:jj_upper
+      fprintf(fid, '[%d,%d,%d]',all_pts(1:3,ii));
+      if(ii~=jj_upper), fprintf(fid,','); end
+    end
+    fprintf(fid, ']\n');
+    fclose(fid);
+
+    dvid_cmd = ...
+        sprintf(['curl -s -f -X GET ' ...
+                 '"%s/api/node/%s/%s/labels?%s" ' ...
+                 '-d "@%s" > %s'], ...
+                this.machine_name, this.repo_name, ...
+                seg_name, ...
+                this.user_string, ...
+                tmp_out, tmp_in);
+    this.run_dvid_cmd(dvid_cmd);
+
+    ss = fileread(tmp_in);
+    dd(1,jj:jj_upper) = cell2mat(parse_json(ss));
   end
-  fprintf(fid, ']\n');
-  fclose(fid);
-
-  dvid_cmd = ...
-      sprintf(['curl -s -f -X GET ' ...
-               '"%s/api/node/%s/%s/labels?%s" ' ...
-               '-d "@%s" > %s'], ...
-              this.machine_name, this.repo_name, ...
-              seg_name, ...
-              this.user_string, ...
-              tmp_out, tmp_in);
-  this.run_dvid_cmd(dvid_cmd);
-
-  ss = fileread(tmp_in);
-  dd = cell2mat(parse_json(ss));
+  fprintf('\n');
 
   n_tt = size(tt_pts,2);
-  ll_t = dd(1:n_tt);
+  ll_t = uint64(dd(1:n_tt));
 
   ll_p = {};
   if(get_psds)
@@ -73,7 +81,7 @@ function [ll_t, ll_p] = get_labels(this, seg_name, tt_pts, pp_pts)
     idx  = n_tt;
     for ii=1:n_pp
       n_pii    = size(pp_pts{ii},2);
-      ll_p{ii} = dd(idx + (1:n_pii));
+      ll_p{ii} = uint64(dd(idx + (1:n_pii)));
       idx      = idx + n_pii;
     end
   end
