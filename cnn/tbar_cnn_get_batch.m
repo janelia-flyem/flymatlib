@@ -35,11 +35,16 @@ labels = ones(1,1,1, n_label_out,...
               n_examples_total, 'single');
 idx = 0;
 
-n_examples = n_examples_total/length(iiss);
-assert(n_examples == round(n_examples), ...
-       'FLYEMLIB:AssertionFailed',...
-       ['number of training substacks should ' ...
-        'evenly divide batch size']);
+ratios_sum(iiss) = sum(imdb.ratios(iiss,:),2);
+n_examples(iiss) = round(...
+    n_examples_total * ratios_sum(iiss) );
+n_examples(iiss(end)) = n_examples_total - ...
+    sum(n_examples(iiss(1:end-1)));
+% n_examples = n_examples_total/length(iiss);
+% assert(n_examples == round(n_examples), ...
+%        'FLYEMLIB:AssertionFailed',...
+%        ['number of training substacks should ' ...
+%         'evenly divide batch size']);
 
 n_ratios      = length(imdb.classes);
 
@@ -47,10 +52,11 @@ for ii=iiss
   num_tot  = 0;
   num_per_class = zeros(1,n_ratios);
   for cc = 1:n_ratios-1
-    num_per_class(cc) = floor(n_examples * imdb.ratios(ii,cc));
+    num_per_class(cc) = round(...
+        n_examples(ii) * imdb.ratios(ii,cc)/ratios_sum(ii));
     num_tot = num_tot + num_per_class(cc);
   end
-  num_per_class(n_ratios) = n_examples - num_tot;
+  num_per_class(n_ratios) = n_examples(ii) - num_tot;
 
   for cc = 1:n_ratios
     if(num_per_class(cc)==0), continue, end
