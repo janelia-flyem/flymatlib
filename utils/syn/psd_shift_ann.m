@@ -1,5 +1,6 @@
 function pp = psd_shift_ann(tt, pp, dvid_conn, seg_name, ...
-                            window_r, erode_r, z_r)
+                            window_r, erode_r, z_r, ...
+                            cube_seg_fn, seg_offset)
 % PSD_SHIFT_ANN shift psd annotations inside, grouped z-planes
 %   point annotations are shifted away from segment boundaries,
 %   and grouped into a minimal number of z-planes
@@ -15,6 +16,12 @@ function pp = psd_shift_ann(tt, pp, dvid_conn, seg_name, ...
   end
   if(~exist('z_r','var') || isempty(z_r))
     z_r = 6;
+  end
+
+  use_dvid = true;
+  if(isempty(dvid_conn))
+    use_dvid = false;
+    local_seg = read_image_stack(cube_seg_fn);
   end
 
   [dx,dy,dz] = ndgrid(-window_r:window_r, ...
@@ -39,8 +46,17 @@ function pp = psd_shift_ann(tt, pp, dvid_conn, seg_name, ...
     pp_loc = bsxfun(@minus, pp{ii}(1:3,:), vol_start) + 1;
 
     % get local segmentation
-    ss = dvid_conn.get_segmentation(...
-        vol_start', window_sz, [], seg_name);
+    if(use_dvid)
+      ss = dvid_conn.get_segmentation(...
+          vol_start', window_sz, [], seg_name);
+    else
+      xx = vol_start(2) - seg_offset(2);
+      yy = vol_start(1) - seg_offset(1);
+      zz = vol_start(3) - seg_offset(3);
+      ss = local_seg(xx+(1:window_sz(1)),...
+                     yy+(1:window_sz(2)),...
+                     zz+(1:window_sz(3)));
+    end
 
     n_psd = size(pp_loc,2);
     seg_valid_ind = cell(1, n_psd);

@@ -46,10 +46,20 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
   tlocs_all = cell(1, n_substacks);
   plocs_all = cell(1, n_substacks);
 
+  if(isscalar(dvid_conn))
+    dvid_conn(2) = dvid_conn;
+  end
+
   parfor ii=1:n_substacks
     % skip over any previously processed substacks
     fn_mat = sprintf('%s/%06d_synsh.mat', work_dir, ii);
     if(exist(fn_mat,'file')), continue, end
+
+    % test if no tbars
+    if(isempty(tbars_ss{ii}))
+      save_out(fn_mat, [], {}); % save empty
+      continue
+    end
 
     % adding in buffer large enough to do PSD features
     vol_start_outer = vol_start(ii,:) - bf;
@@ -57,12 +67,12 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
 
     % get segmentation
     seg_fn = sprintf('%s/%06d_seg.h5', work_dir, ii);
-    dvid_conn.get_segmentation(...
+    dvid_conn(1).get_segmentation(...
         vol_start_outer, vol_sz_outer, seg_fn, seg_name);
     % get image
     image_fn = sprintf('%s/%06d_image.h5', work_dir, ii);
     if(~isempty(psdm.image_thresh))
-      [~,~,empty_vol] = dvid_conn.get_image(...
+      [~,~,empty_vol] = dvid_conn(2).get_image(...
           vol_start_outer, vol_sz_outer, image_fn, ...
           psdm.do_normalize, bg_vals);
     else
@@ -84,14 +94,19 @@ function psd_full_infer(work_dir, psd_model_fn, tbars, ...
 
       ready_st = sprintf('%s/status/%06d.ready', work_dir, ii);
       done_st  = sprintf('%s/status/%06d.done',  work_dir, ii);
-      system(sprintf('touch %s', ready_st));
+      if(~exist(done_st, 'file'))
+        system(sprintf('touch %s', ready_st));
+      end
       while(~exist(done_st, 'file')), pause(10), end
 
       fn_mat_orig = sprintf('%s/%06d_syn.mat', work_dir, ii);
       ss = load(fn_mat_orig, 'tlocs', 'plocs');
       tlocs = ss.tlocs;
-      plocs = psd_shift_ann(tlocs, ss.plocs, dvid_conn, seg_name);
-      plocs = psd_make_global_unique(plocs,  dvid_conn, seg_name);
+      plocs = psd_shift_ann(tlocs, ss.plocs, [],[], ...
+                            bf, [], [], ...
+                            seg_fn, vol_start_outer);
+      plocs = psd_make_global_unique(plocs,  [], [], ...
+                                     seg_fn, vol_start_outer);
       save_out(fn_mat, tlocs, plocs);
       system(sprintf('rm %s', fn_mat_orig));
     end
