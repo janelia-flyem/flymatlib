@@ -26,9 +26,30 @@ function [lltt, fftt, syntt, locstt] = synapse_labels_feats_worker2(...
     [tx ty tz] - total_window, ...
     (2*total_window+1)*ones(1,3)));
 
+  % if(~isempty(image_thresh))
+  %   im_region = read_image_stack_wpad(...
+  %       image_fn, [], ...
+  %   [tx ty tz] - total_window, ...
+  %   (2*total_window+1)*ones(1,3));
+
+  %   im_mean = mean(im_region(:));
+  %   im_std  = std( im_region(:));
+  %   fprintf('%g %g\n', im_mean, im_std);
+  % end
+
+
   % establish candidates
   ii_psds_cand = get_candidate_psds( ...
-    tbar_seg, local_vol, neighboring_flt, total_window_flt);
+      tbar_seg, local_vol, neighboring_flt, total_window_flt);
+
+  psd_missing = setdiff(ii_psds_seg, ii_psds_cand);
+  if(length(psd_missing)>0)
+    fprintf('%d %d: ', tbar_seg, length(psd_missing));
+    for ii=1:length(psd_missing)
+      fprintf('%d ', psd_missing(ii));
+    end
+    fprintf('\n')
+  end
 
   if(size(window_radii,1) == 1)
     window_radii(2,:) = NaN;
@@ -103,6 +124,10 @@ function [lltt, fftt, syntt, locstt] = synapse_labels_feats_worker2(...
        ~isempty(image_thresh))
       local_image{ww} = read_image_stack_wpad(...
           image_fn, [],     offset, imdim);
+
+      % local_image{ww} = local_image{ww} - im_mean;
+      % local_image{ww} = local_image{ww} / ...
+      %     (im_std+1e-2);
     end
 
     if(~isnan(window_radii(2,ww))) % ignore segm where image < thresh

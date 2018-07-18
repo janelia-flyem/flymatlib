@@ -82,6 +82,10 @@ function [lltt, fftt, syntt, locstt] = synapse_labels_feats_worker(...
     local_image{ww} = read_image_stack_wpad(...
       image_fn, [],     offset, imdim);
 
+    local_image{ww} = local_image{ww} - mean(local_image{ww}(:));
+    local_image{ww} = local_image{ww} / ...
+        (std(local_image{ww}(:))+1e-2);
+
     if(~isnan(window_radii(2,ww))) % ignore segm where image < thresh
       ignore_seg = local_image{ww} < window_radii(2,ww);
       local_seg{ww}(ignore_seg) = 0;
