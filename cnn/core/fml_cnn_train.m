@@ -244,12 +244,18 @@ error = bsxfun(@times, predictions, labels) < 0 ;
 labels_sz = size(labels);
 err(1,1) = sum(error(:)) / prod(labels_sz(1:3));
 predictions = 1/(1+exp(-predictions));
-error = (labels== 1).*(max(0.5-predictions,0)) + ...
-        (labels==-1).*(max(predictions-0.5,0));
-err(2,1) = sum(error(:)) / prod(labels_sz(1:3));
-error = (labels== 1).*(max(1-predictions,0)) + ...
-        (labels==-1).*(max(predictions,0));
-err(3,1) = sum(error(:)) / prod(labels_sz(1:3));
+
+n_labels = length(labels);
+idx1     = (labels==1);
+err(2,1) = sum( 1-predictions(idx1) ) / (sum(idx1)/n_labels);
+idx0     = (labels==-1);
+err(3,1) = sum( predictions(  idx0) ) / (sum(idx0)/n_labels);
+% error = (labels== 1).*(max(0.5-predictions,0)) + ...
+%         (labels==-1).*(max(predictions-0.5,0));
+% err(2,1) = sum(error(:)) / prod(labels_sz(1:3));
+% error = (labels== 1).*(max(1-predictions,0)) + ...
+%         (labels==-1).*(max(predictions,0));
+% err(3,1) = sum(error(:)) / prod(labels_sz(1:3));
 
 % --------------------------------------------------------------------
 function err = error_combobj(opts, labels, res) % FML addition
