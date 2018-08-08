@@ -42,7 +42,7 @@ function [ll_t, ll_p] = get_labels(this, seg_name, tt_pts, pp_pts)
 
   n_pts = size(all_pts,2);
 
-  num_at_once = 10000;
+  num_at_once = 1000;
 
   for jj=1:num_at_once:n_pts
     fprintf('.');
