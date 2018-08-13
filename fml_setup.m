@@ -26,4 +26,5 @@ function fml_setup()
   addpath(fullfile(fmlpath, 'third_party', 'export_fig' ));
   addpath(fullfile(fmlpath, 'third_party', 'convnfft'   ));
   addpath(fullfile(fmlpath, 'examples'                  ));
+  addpath(fullfile(fmlpath, 'examples',    'fib25_psd'  ));
 end
