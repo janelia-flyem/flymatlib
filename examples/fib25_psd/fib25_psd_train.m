@@ -8,7 +8,7 @@ base_dir = 'fib25_psd_save'
 vol_start = [2508, 2759, 1500; ...
              3969, 3732, 2500];
 vol_sz = [520, 520, 520];
-vol_bf = 30;
+vol_bf = 20;
 
 n_cubes = size(vol_start,1);
 
@@ -66,7 +66,7 @@ end
 
 
 %% extract features/training examples
-all_seg_candidates = true;
+all_seg_candidates = false;
 use_v2 = true;
 
 for ii=1:n_cubes

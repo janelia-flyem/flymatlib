@@ -15,8 +15,8 @@ fn_vol_start = 'fib25_psd_infer_roi.txt';
 % [tbars, psds] = tbar_json2locs(syn_all_fn, [], true);
 load('fib25_syn_gt.mat');
 
-psd_model_fn = sprintf('%s/psd_trained2.mat', base_dir);
-work_dir = sprintf('%s/output2', base_dir);
+psd_model_fn = sprintf('%s/psd_trained.mat', base_dir);
+work_dir = sprintf('%s/output', base_dir);
 
 psd_full_infer(work_dir, psd_model_fn, tbars, ...
                fn_vol_start, [], ...
@@ -47,7 +47,7 @@ end
 tbars_gt = cell2mat(tbars_sub);
 psds_gt = horzcat(psds_sub{:});
 
-ss = load(sprintf('%s/output2/syn.mat', base_dir));
+ss = load(sprintf('%s/output/syn.mat', base_dir));
 tbars_pd = ss.tlocs;
 psds_pd = ss.plocs;
 
@@ -59,3 +59,11 @@ psds_pd = ss.plocs;
 [mm, bb] = synapse_pr_curve(llt_gt, llp_gt, llt_pd, llp_pd, ...
                             psds_pd, 0.2:0.1:0.9, ...
                             'groundtruth');
+
+figure, hold on
+plot(mm.rrs, mm.pps, 'r.-')
+plot(bb.rrs, bb.pps, 'b.-')
+legend('weighted edges', 'unweighted edges', ...
+       'Location', 'SouthWest')
+grid on
+axis([0.5, 1, 0.5, 1])

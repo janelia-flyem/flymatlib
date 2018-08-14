@@ -90,3 +90,37 @@ ___________________________________
 see ``examples/fml_tbar_classifier_example.m`` for an example script
 that demonstrates CNN synapse (T-bar) detector training, inference,
 and precision/recall computation.
+
+example usage for PSD detection
+_______________________________
+
+0. minimum set-up instructions:
+
+   run ``make`` in ``flymatlib/third_party`` to produce
+   ``fml_lz4_mex.mexa64``
+
+   create or add to Matlab ``startup.m`` script::
+
+     global DFEVAL_DIR
+     % directory for temporary files
+     DFEVAL_DIR = '/groups/flyem/home/huangg/z_dist_comp';
+     % set path for flymatlib
+     run('flymatlib/fml_setup.m')
+
+   example scripts are in ``flymatlib/examples/fib25_psd``; at the top
+   of ``fib25_psd_train`` and ``fib25_psd_infer`` set ``base_dir`` as
+   location for saved data/model/output
+
+1. training/inference
+
+   run ``fib25_psd_train``, which will produce ``psd_trained.mat``
+   under ``base_dir``
+
+   inference is designed to be spread across two machines with a
+   shared file system.  run ``fib25_psd_infer`` on one machine, which
+   will handle downloading image/segmentation from DVID
+   (parallelized).  On the other machine, set the number of possible
+   parallel workers (eg ``parpool('local', 32)``), then run the
+   command echoed on the first machine, eg::
+
+     psd_full_infer_worker('fib25_psd_save/psd_trained.mat', 'fib25_psd_save/output', 8)
